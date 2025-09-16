@@ -1,2 +1,0 @@
-# Distribuidos-GrupoO
-Distribuidos-GrupoO
