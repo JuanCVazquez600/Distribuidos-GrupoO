@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package inventario;
+
+option java_package = "com.grpc.inventario";
+option java_outer_classname = "InventarioProto";
+
+service InventarioService {
+  rpc AgregarDonacion (DonacionRequest) returns (Respuesta);
+  rpc ModificarDonacion (DonacionRequest) returns (Respuesta);
+  rpc ListarDonaciones (Empty) returns (DonacionesResponse);
+  rpc BajaDonacion (DonacionIdRequest) returns (Respuesta);
+}
+
+message Empty {}
+
+enum Categoria {
+  ROPA = 0;
+  ALIMENTOS = 1;
+  JUGUETES = 2;
+  UTILES_ESCOLARES = 3;
+}
+
+message DonacionRequest {
+  int32 id = 1;
+  Categoria categoria = 2;
+  string descripcion = 3;
+  int32 cantidad = 4;
+  bool eliminado = 5;
+}
+
+message DonacionIdRequest {
+  int32 id = 1;
+}
+
+message DonacionesResponse {
+  repeated DonacionRequest donaciones = 1;
+}
+
+message Respuesta {
+  bool exito = 1;
+  string mensaje = 2;
+}
