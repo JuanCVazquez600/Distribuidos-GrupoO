@@ -15,7 +15,7 @@ public interface IEventoSolidarioService {
 
     EventoSolidario buscarPorId(Integer id);
 
-    void agregarParticipante(Integer eventoId, String nombreUsuario);
+    void agregarParticipante(Integer eventoId, Integer usuarioId);
 
-    void quitarParticipante(Integer eventoId, String nombreUsuario);
+    void quitarParticipante(Integer eventoId, Integer usuarioId);
 }

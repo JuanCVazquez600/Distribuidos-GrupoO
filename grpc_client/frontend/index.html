@@ -1,0 +1,34 @@
+<button type="submit">Ingresar</button>
+</form>
+<div id="mensaje"></div>
+<script>
+    const form = document.getElementById('loginForm');
+    const mensajeDiv = document.getElementById('mensaje');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        mensajeDiv.textContent = '';
+        const usuario = form.usuario.value;
+        const clave = form.clave.value;
+        try {
+            const response = await fetch('http://localhost:9090/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario_o_email: usuario, clave: clave })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                mensajeDiv.style.color = 'green';
+                mensajeDiv.textContent = 'Login exitoso. Bienvenido ' + data.nombre;
+                // Aquí redirigir o cargar vista según rol
+            } else {
+                mensajeDiv.style.color = 'red';
+                mensajeDiv.textContent = data.error || 'Error en login';
+            }
+        } catch (error) {
+            mensajeDiv.style.color = 'red';
+            mensajeDiv.textContent = 'Error de conexión con el servidor';
+        }
+    });
+</script>
+</body>
+</html>

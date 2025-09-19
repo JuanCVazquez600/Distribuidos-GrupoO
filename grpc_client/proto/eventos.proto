@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package eventos;
+
+option java_package = "com.grpc.eventos";
+option java_outer_classname = "EventosProto";
+
+service EventoService {
+  rpc CrearEvento (EventoRequest) returns (Respuesta);
+  rpc ModificarEvento (EventoRequest) returns (Respuesta);
+  rpc ListarEventos (Empty) returns (EventosResponse);
+  rpc BajaEvento (EventoIdRequest) returns (Respuesta);
+  rpc AsignarMiembro (AsignarMiembroRequest) returns (Respuesta);
+  rpc QuitarMiembro (QuitarMiembroRequest) returns (Respuesta);
+}
+
+message Empty {}
+
+message EventoRequest {
+  int32 id = 1;
+  string nombre = 2;
+  string descripcion = 3;
+  string fechaHora = 4; // ISO 8601 string
+  repeated MiembroRequest miembros = 5;
+}
+
+message EventoIdRequest {
+  int32 id = 1;
+}
+
+message MiembroRequest {
+  int32 id = 1;
+  string nombre = 2;
+  string apellido = 3;
+}
+
+message AsignarMiembroRequest {
+  int32 eventoId = 1;
+  int32 miembroId = 2;
+}
+
+message QuitarMiembroRequest {
+  int32 eventoId = 1;
+  int32 miembroId = 2;
+}
+
+message EventosResponse {
+  repeated EventoRequest eventos = 1;
+}
+
+message Respuesta {
+  bool exito = 1;
+  string mensaje = 2;
+}
