@@ -69,33 +69,39 @@ public class EventoSolidarioServiceImplementation implements IEventoSolidarioSer
 
 
     @Override
-    public void agregarParticipante(Integer eventoId, String nombreUsuario) {
+    public void agregarParticipante(Integer eventoId, Integer usuarioId) {
         EventoSolidario evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
         if (evento.getFechaEvento().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("No se puede participar en eventos pasados");
         }
-        Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario)
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
         if (evento.getMiembros().contains(usuario)) {
             throw new RuntimeException("Ya participas en este evento");
         }
+
         evento.getMiembros().add(usuario);
         eventoRepository.save(evento);
     }
 
     @Override
-    public void quitarParticipante(Integer eventoId, String nombreUsuario) {
+    public void quitarParticipante(Integer eventoId, Integer usuarioId) {
         EventoSolidario evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
         if (evento.getFechaEvento().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("No se puede modificar participación en eventos pasados");
         }
-        Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario)
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
         if (!evento.getMiembros().contains(usuario)) {
             throw new RuntimeException("No participas en este evento");
         }
+
         evento.getMiembros().remove(usuario);
         eventoRepository.save(evento);
     }

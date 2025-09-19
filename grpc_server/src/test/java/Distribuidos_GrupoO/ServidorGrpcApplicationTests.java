@@ -8,7 +8,6 @@ class ServidorGrpcApplicationTests {
 
     @Test
     void contextLoads() {
-        
     }
 
 }
