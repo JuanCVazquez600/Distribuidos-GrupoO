@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package usuarios;
+
+option java_package = "com.grpc.usuarios";
+option java_outer_classname = "UsuariosProto";
+
+service UsuarioService {
+  rpc CrearUsuario (UsuarioRequest) returns (Respuesta);
+  rpc ModificarUsuario (UsuarioRequest) returns (Respuesta);
+  rpc ListarUsuarios (Empty) returns (UsuariosResponse);
+  rpc BajaUsuario (UsuarioIdRequest) returns (Respuesta);
+  rpc Login (LoginRequest) returns (LoginResponse);
+}
+
+message Empty {}
+
+message UsuarioRequest {
+  int32 id = 1;
+  string nombreUsuario = 2;
+  string nombre = 3;
+  string apellido = 4;
+  string telefono = 5;
+  string clave = 6;
+  string email = 7;
+  string rol = 8;
+  bool activo = 9;
+}
+
+message UsuarioIdRequest {
+  int32 id = 1;
+}
+
+message UsuariosResponse {
+  repeated UsuarioRequest usuarios = 1;
+}
+
+message Respuesta {
+  bool exito = 1;
+  string mensaje = 2;
+}
+
+message LoginRequest {
+  string usuarioEmail = 1;
+  string clave = 2;
+}
+
+message LoginResponse {
+  bool exito = 1;
+  string mensaje = 2;
+  UsuarioRequest usuario = 3;
+}
