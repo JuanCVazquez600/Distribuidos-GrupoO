@@ -12,4 +12,5 @@ public interface IUsuarioService {
     void bajaUsuario(Integer id);
     Usuario buscarPorNombreUsuario(String nombreUsuario);
     Usuario guardarUsuario(Usuario usuario);
+
 }
