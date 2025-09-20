@@ -97,5 +97,4 @@ public class UsuarioServiceImplementation implements IUsuarioService {
     public Usuario guardarUsuario(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
-
 }
