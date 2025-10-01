@@ -96,7 +96,7 @@ public class InventarioServiceGrpcImpl extends InventarioServiceGrpc.InventarioS
     private InventarioDeDonaciones mapProtoToInventario(InventarioProto.DonacionRequest proto) {
         InventarioDeDonaciones inventario = new InventarioDeDonaciones();
         inventario.setId(proto.getId());
-        inventario.setCategoria(proto.getCategoriaValue()); //ajustar
+        inventario.setCategoria(InventarioDeDonaciones.CategoriaEnum.valueOf(proto.getCategoria().name())); //ajustar
         inventario.setDescripcion(proto.getDescripcion());
         inventario.setCantidad(proto.getCantidad());
         inventario.setEliminado(proto.getEliminado());
@@ -106,7 +106,7 @@ public class InventarioServiceGrpcImpl extends InventarioServiceGrpc.InventarioS
     private InventarioProto.DonacionRequest mapInventarioToProto(InventarioDeDonaciones inventario) {
         return InventarioProto.DonacionRequest.newBuilder()
                 .setId(inventario.getId())
-                .setCategoriaValue(inventario.getCategoria()) // ajustar
+                .setCategoria(InventarioProto.Categoria.valueOf(inventario.getCategoria().name()))// ajustar
                 .setDescripcion(inventario.getDescripcion())
                 .setCantidad(inventario.getCantidad())
                 .setEliminado(inventario.getEliminado())

@@ -1,4 +1,10 @@
-<button type="submit">Ingresar</button>
+
+<form id="loginForm">
+  <label for="usuario">Usuario o Email:</label>
+  <input type="text" id="usuario" name="usuario" required>
+  <label for="clave">Clave:</label>
+  <input type="password" id="clave" name="clave" required>
+  <button type="submit">Ingresar</button>
 </form>
 <div id="mensaje"></div>
 <script>
@@ -10,19 +16,15 @@
         const usuario = form.usuario.value;
         const clave = form.clave.value;
         try {
-            const response = await fetch('http://localhost:9090/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuario_o_email: usuario, clave: clave })
-            });
+            const url = `http://localhost:5000/login?usuarioEmail=${encodeURIComponent(usuario)}&clave=${encodeURIComponent(clave)}`;
+            const response = await fetch(url);
             const data = await response.json();
-            if (response.ok) {
+            if (data.exito) {
                 mensajeDiv.style.color = 'green';
-                mensajeDiv.textContent = 'Login exitoso. Bienvenido ' + data.nombre;
-                // Aquí redirigir o cargar vista según rol
+                mensajeDiv.textContent = 'Login exitoso. Bienvenido ' + (data.usuario || '');
             } else {
                 mensajeDiv.style.color = 'red';
-                mensajeDiv.textContent = data.error || 'Error en login';
+                mensajeDiv.textContent = data.mensaje || 'Error en login';
             }
         } catch (error) {
             mensajeDiv.style.color = 'red';
