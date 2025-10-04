@@ -281,5 +281,37 @@ def baja_donacion(id):
     except grpc.RpcError as e:
         return jsonify({'exito': False, 'mensaje': str(e)})
 
+@app.route('/eventos/<int:evento_id>/miembros/<int:miembro_id>', methods=['POST'])
+def asignar_miembro(evento_id, miembro_id):
+    data = request.json or {}
+    channel = grpc.insecure_channel('localhost:9090')
+    stub = eventos_pb2_grpc.EventoServiceStub(channel)
+    asignar_request = eventos_pb2.AsignarMiembroRequest(
+        eventoId=evento_id,
+        miembroId=miembro_id,
+        userId=data.get('userId', 0)
+    )
+    try:
+        response = stub.AsignarMiembro(asignar_request)
+        return jsonify({'exito': response.exito, 'mensaje': response.mensaje})
+    except grpc.RpcError as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+@app.route('/eventos/<int:evento_id>/miembros/<int:miembro_id>', methods=['DELETE'])
+def quitar_miembro(evento_id, miembro_id):
+    data = request.json or {}
+    channel = grpc.insecure_channel('localhost:9090')
+    stub = eventos_pb2_grpc.EventoServiceStub(channel)
+    quitar_request = eventos_pb2.QuitarMiembroRequest(
+        eventoId=evento_id,
+        miembroId=miembro_id,
+        userId=data.get('userId', 0)
+    )
+    try:
+        response = stub.QuitarMiembro(quitar_request)
+        return jsonify({'exito': response.exito, 'mensaje': response.mensaje})
+    except grpc.RpcError as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

@@ -5,6 +5,7 @@ import Distribuidos_GrupoO.ServidorGRPC.service.implementation.UsuarioServiceImp
 import io.grpc.stub.StreamObserver;
 import org.lognet.springboot.grpc.GRpcService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
 
@@ -14,23 +15,26 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
     @Autowired
     private UsuarioServiceImplementation usuarioService;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     @Override
     public void crearUsuario(com.grpc.usuarios.UsuariosProto.UsuarioRequest request, StreamObserver<com.grpc.usuarios.UsuariosProto.Respuesta> responseObserver) {
         try {
-            if (!hasPermission(request.getUserId(), "CREAR_USUARIO")) {
-                com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
-                        .setExito(false)
-                        .setMensaje("Permiso denegado: Solo el PRESIDENTE puede crear usuarios")
-                        .build();
-                responseObserver.onNext(respuesta);
-                responseObserver.onCompleted();
-                return;
-            }
+             if (!hasPermission(request.getUserId(), "CREAR_USUARIO")) {
+                 com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
+                         .setExito(false)
+                         .setMensaje("Permiso denegado: Solo el PRESIDENTE puede crear usuarios")
+                         .build();
+                 responseObserver.onNext(respuesta);
+                 responseObserver.onCompleted();
+                 return;
+             }
             Usuario usuario = mapProtoToUsuario(request);
-            usuarioService.crearUsuario(usuario);
+            Usuario usuarioCreado = usuarioService.crearUsuario(usuario);
             com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
                     .setExito(true)
-                    .setMensaje("Usuario creado correctamente")
+                    .setMensaje("Usuario creado correctamente. Contraseña: " + usuarioCreado.getClave()) // Temporal para testing
                     .build();
             responseObserver.onNext(respuesta);
         } catch (Exception e) {
@@ -128,7 +132,7 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
         try {
             Usuario usuario = usuarioService.buscarPorEmail(email); // Cambiado para buscar por email
             // Prueba
-            if (usuario != null && clave.equals(usuario.getClave())) {
+            if (usuario != null && passwordEncoder.matches(clave, usuario.getClave())) {
                 exito = true;
                 mensaje = "Login exitoso";
                 usuarioProto = mapUsuarioToProto(usuario);

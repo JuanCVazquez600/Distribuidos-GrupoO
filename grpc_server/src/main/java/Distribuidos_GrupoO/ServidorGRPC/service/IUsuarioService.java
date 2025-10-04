@@ -3,7 +3,6 @@ package Distribuidos_GrupoO.ServidorGRPC.service;
 import Distribuidos_GrupoO.ServidorGRPC.model.Usuario;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IUsuarioService {
     Usuario crearUsuario(Usuario usuario);

@@ -10,8 +10,6 @@ import Distribuidos_GrupoO.ServidorGRPC.service.implementation.InventarioDeDonac
 import Distribuidos_GrupoO.ServidorGRPC.service.implementation.UsuarioServiceImplementation;
 
 import java.util.List;
-import com.grpc.inventario.InventarioProto;
-import com.grpc.inventario.InventarioServiceGrpc;
 
 @GRpcService
 public class InventarioServiceGrpcImpl extends InventarioServiceGrpc.InventarioServiceImplBase {

@@ -25,6 +25,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [formType, setFormType] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -107,33 +109,28 @@ const Dashboard = ({ currentUser, onLogout }) => {
   };
 
   const handleDelete = async (id, type) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este elemento?')) {
-      try {
-        let endpoint;
-        if (type === 'user') {
-          endpoint = `http://localhost:5000/usuarios/${id}`;
-        } else if (type === 'event') {
-          endpoint = `http://localhost:5000/eventos/${id}`;
-        } else if (type === 'inventory') {
-          endpoint = `http://localhost:5000/donaciones/${id}`;
-        }
-
-        await axios.delete(endpoint, { data: { userId: currentUser.id } });
-
-        // Refresh data
-        if (type === 'user') {
-          await fetchUsuarios();
-        } else if (type === 'event') {
-          await fetchEventos();
-        } else if (type === 'inventory') {
-          await fetchDonaciones();
-        }
-
-        // Show success message
-        showAlert('Elemento eliminado exitosamente', 'success');
-      } catch (error) {
-        showAlert('Error al eliminar el elemento: ' + error.response?.data?.mensaje || error.message, 'error');
+    try {
+      let endpoint;
+      if (type === 'user') {
+        endpoint = `http://localhost:5000/usuarios/${id}`;
+      } else if (type === 'event') {
+        endpoint = `http://localhost:5000/eventos/${id}`;
+      } else if (type === 'inventory') {
+        endpoint = `http://localhost:5000/donaciones/${id}`;
       }
+
+      await axios.delete(endpoint, { data: { userId: currentUser.id } });
+
+      // Refresh data
+      if (type === 'user') {
+        await fetchUsuarios();
+      } else if (type === 'event') {
+        await fetchEventos();
+      } else if (type === 'inventory') {
+        await fetchDonaciones();
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
     }
   };
 
@@ -166,6 +163,57 @@ const Dashboard = ({ currentUser, onLogout }) => {
     setTimeout(() => {
       alertDiv.remove();
     }, 5000);
+  };
+
+  const handleJoinLeaveEvent = async (event) => {
+    const eventDate = new Date(event.fechaHora);
+    const now = new Date();
+    const isFuture = eventDate > now;
+    const isMember = event.miembros && event.miembros.some(m => m.id === currentUser.id);
+
+    if (!isFuture && !isMember) {
+      return;
+    }
+
+    try {
+      const endpoint = `http://localhost:5000/eventos/${event.id}/miembros/${currentUser.id}`;
+      if (isMember) {
+        await axios.delete(endpoint, { data: { userId: currentUser.id } });
+      } else {
+        await axios.post(endpoint, { userId: currentUser.id });
+      }
+      await fetchEventos(); // Refresh events
+    } catch (error) {
+      console.error('Error joining/leaving event:', error);
+    }
+  };
+
+  const handleManageMembers = (event) => {
+    setSelectedEvent(event);
+    setShowMemberModal(true);
+  };
+
+  const handleMemberModalClose = () => {
+    setShowMemberModal(false);
+    setSelectedEvent(null);
+  };
+
+  const handleAddMember = async (userId) => {
+    try {
+      await axios.post(`http://localhost:5000/eventos/${selectedEvent.id}/miembros/${userId}`, { userId: currentUser.id });
+      await fetchEventos();
+    } catch (error) {
+      console.error('Error adding member:', error);
+    }
+  };
+
+  const handleRemoveMember = async (userId) => {
+    try {
+      await axios.delete(`http://localhost:5000/eventos/${selectedEvent.id}/miembros/${userId}`, { data: { userId: currentUser.id } });
+      await fetchEventos();
+    } catch (error) {
+      console.error('Error removing member:', error);
+    }
   };
 
   const renderStats = () => (
@@ -483,11 +531,13 @@ const Dashboard = ({ currentUser, onLogout }) => {
                               </>
                             )}
                             {hasPermission('join_events') && (
-                              <button className="btn btn-primary btn-sm" onClick={() => {
-                                // TODO: Implement join/leave event functionality
-                                alert('Funcionalidad para unirse/abandonar eventos próximamente');
-                              }}>
+                              <button className="btn btn-primary btn-sm" onClick={() => handleJoinLeaveEvent(e)}>
                                 {e.miembros && e.miembros.some(m => m.id === currentUser.id) ? '🚪 Abandonar' : '➕ Unirse'}
+                              </button>
+                            )}
+                            {hasPermission('manage_events') && (
+                              <button className="btn btn-secondary btn-sm" onClick={() => handleManageMembers(e)}>
+                                👥 Gestionar Miembros
                               </button>
                             )}
                           </div>
@@ -613,6 +663,70 @@ const Dashboard = ({ currentUser, onLogout }) => {
                   currentUser={currentUser}
                 />
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMemberModal && selectedEvent && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">👥 Gestionar Miembros - {selectedEvent.nombre}</h2>
+              <button className="close-button" onClick={handleMemberModalClose}>×</button>
+            </div>
+            <div style={{ padding: 'var(--spacing-lg)' }}>
+              <h3 style={{ marginBottom: 'var(--spacing-md)', color: 'var(--text-primary)' }}>Miembros Actuales</h3>
+              {selectedEvent.miembros && selectedEvent.miembros.length > 0 ? (
+                <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+                  {selectedEvent.miembros.map(member => (
+                    <div key={member.id} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: 'var(--spacing-sm)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--border-radius-sm)',
+                      marginBottom: 'var(--spacing-xs)',
+                      background: 'var(--background-light)'
+                    }}>
+                      <span>{member.nombre} {member.apellido}</span>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleRemoveMember(member.id)}
+                      >
+                        ❌ Remover
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No hay miembros en este evento</p>
+              )}
+
+              <h3 style={{ marginBottom: 'var(--spacing-md)', color: 'var(--text-primary)' }}>Agregar Miembro</h3>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {usuarios.filter(u => !selectedEvent.miembros || !selectedEvent.miembros.some(m => m.id === u.id)).map(user => (
+                  <div key={user.id} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: 'var(--spacing-sm)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--border-radius-sm)',
+                    marginBottom: 'var(--spacing-xs)',
+                    background: 'var(--background-light)'
+                  }}>
+                    <span>{user.nombre} {user.apellido} ({user.rol})</span>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleAddMember(user.id)}
+                    >
+                      ➕ Agregar
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

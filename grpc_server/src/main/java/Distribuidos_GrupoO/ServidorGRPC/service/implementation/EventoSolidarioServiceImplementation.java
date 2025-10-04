@@ -74,15 +74,17 @@ public class EventoSolidarioServiceImplementation implements IEventoSolidarioSer
 
 
     @Override
+    @Transactional
     public void agregarParticipante(Integer eventoId, Integer usuarioId) {
         EventoSolidario evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
-        if (evento.getFechaEvento().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("No se puede participar en eventos pasados");
-        }
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!usuario.getActivo()) {
+            throw new RuntimeException("Solo miembros activos pueden participar en eventos");
+        }
 
         if (evento.getMiembros().contains(usuario)) {
             throw new RuntimeException("Ya participas en este evento");
@@ -93,12 +95,10 @@ public class EventoSolidarioServiceImplementation implements IEventoSolidarioSer
     }
 
     @Override
+    @Transactional
     public void quitarParticipante(Integer eventoId, Integer usuarioId) {
         EventoSolidario evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
-        if (evento.getFechaEvento().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("No se puede modificar participación en eventos pasados");
-        }
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -109,5 +109,22 @@ public class EventoSolidarioServiceImplementation implements IEventoSolidarioSer
 
         evento.getMiembros().remove(usuario);
         eventoRepository.save(evento);
+    }
+
+    @Override
+    public void quitarUsuarioDeEventosFuturos(Integer usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<EventoSolidario> eventosFuturos = eventoRepository.findAll().stream()
+                .filter(evento -> evento.getFechaEvento().isAfter(LocalDateTime.now()))
+                .toList();
+
+        for (EventoSolidario evento : eventosFuturos) {
+            if (evento.getMiembros().contains(usuario)) {
+                evento.getMiembros().remove(usuario);
+                eventoRepository.save(evento);
+            }
+        }
     }
 }

@@ -200,65 +200,26 @@ const UserForm = ({ user, onSuccess, onCancel, currentUser }) => {
         </div>
       </div>
 
-      <div className="form-group">
-        <label className="form-label" style={{
+      {user && (
+        <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 'var(--spacing-sm)'
-        }}>
-          <span>🔒</span>
-          Contraseña
-        </label>
-        <input
-          type="password"
-          name="clave"
-          value={formData.clave}
-          onChange={handleChange}
-          required={!user}
-          className="form-input"
-          placeholder={user ? "Dejar vacío para mantener contraseña actual" : "Mínimo 6 caracteres"}
-          disabled={isSubmitting}
-        />
-        {!user && (
-          <small style={{
-            color: 'var(--text-muted)',
-            fontSize: '0.8rem',
-            marginTop: 'var(--spacing-xs)',
-            display: 'block'
-          }}>
-            💡 La contraseña debe tener al menos 6 caracteres
-          </small>
-        )}
-      </div>
-
-      <div className="form-group">
-        <div className="checkbox-group" style={{
-          background: 'var(--bg-secondary)',
-          padding: 'var(--spacing-md)',
-          borderRadius: 'var(--border-radius)',
-          border: '1px solid var(--border-color)'
+          gap: 'var(--spacing-md)',
+          marginBottom: 'var(--spacing-lg)'
         }}>
           <input
             type="checkbox"
             name="activo"
             checked={formData.activo}
             onChange={handleChange}
-            id="activo"
+            id="activo-checkbox"
             disabled={isSubmitting}
           />
-          <label htmlFor="activo" style={{
-            margin: 0,
-            cursor: 'pointer',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-sm)'
-          }}>
-            <span>✅</span>
-            Usuario activo en el sistema
+          <label htmlFor="activo-checkbox" className="form-label" style={{ margin: 0 }}>
+            Usuario Activo
           </label>
         </div>
-      </div>
+      )}
 
       <div style={{
         display: 'flex',

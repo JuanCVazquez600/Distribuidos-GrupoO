@@ -18,4 +18,6 @@ public interface IEventoSolidarioService {
     void agregarParticipante(Integer eventoId, Integer usuarioId);
 
     void quitarParticipante(Integer eventoId, Integer usuarioId);
+
+    void quitarUsuarioDeEventosFuturos(Integer usuarioId);
 }

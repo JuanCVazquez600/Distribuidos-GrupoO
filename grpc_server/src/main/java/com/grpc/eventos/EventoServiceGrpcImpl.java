@@ -12,7 +12,6 @@ import Distribuidos_GrupoO.ServidorGRPC.service.implementation.UsuarioServiceImp
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @GRpcService
@@ -153,7 +152,31 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
     @Override
     public void asignarMiembro(com.grpc.eventos.EventosProto.AsignarMiembroRequest request, StreamObserver<com.grpc.eventos.EventosProto.Respuesta> responseObserver) {
         try {
-            if (!hasPermission(request.getUserId(), "GESTIONAR_EVENTOS")) {
+            Usuario usuarioSolicitante = usuarioService.buscarPorId(request.getUserId());
+            Usuario usuarioMiembro = usuarioService.buscarPorId(request.getMiembroId());
+
+            if (usuarioMiembro == null || !usuarioMiembro.getActivo()) {
+                com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Solo miembros activos pueden ser asignados")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
+
+            String rolSolicitante = usuarioSolicitante.getRol();
+            if ("VOLUNTARIO".equals(rolSolicitante)) {
+                if (!usuarioSolicitante.getId().equals(usuarioMiembro.getId())) {
+                    com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                            .setExito(false)
+                            .setMensaje("El rol VOLUNTARIO solo puede agregarse o quitarse a sí mismo")
+                            .build();
+                    responseObserver.onNext(respuesta);
+                    responseObserver.onCompleted();
+                    return;
+                }
+            } else if (!("PRESIDENTE".equals(rolSolicitante) || "COORDINADOR".equals(rolSolicitante))) {
                 com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
                         .setExito(false)
                         .setMensaje("Permiso denegado: Solo PRESIDENTE o COORDINADOR pueden asignar miembros")
@@ -162,6 +185,7 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
                 responseObserver.onCompleted();
                 return;
             }
+
             eventoService.agregarParticipante(request.getEventoId(), request.getMiembroId());
             com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
                     .setExito(true)
@@ -181,7 +205,20 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
     @Override
     public void quitarMiembro(com.grpc.eventos.EventosProto.QuitarMiembroRequest request, StreamObserver<com.grpc.eventos.EventosProto.Respuesta> responseObserver) {
         try {
-            if (!hasPermission(request.getUserId(), "GESTIONAR_EVENTOS")) {
+            Usuario usuarioSolicitante = usuarioService.buscarPorId(request.getUserId());
+
+            String rolSolicitante = usuarioSolicitante.getRol();
+            if ("VOLUNTARIO".equals(rolSolicitante)) {
+                if (!usuarioSolicitante.getId().equals(request.getMiembroId())) {
+                    com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                            .setExito(false)
+                            .setMensaje("El rol VOLUNTARIO solo puede agregarse o quitarse a sí mismo")
+                            .build();
+                    responseObserver.onNext(respuesta);
+                    responseObserver.onCompleted();
+                    return;
+                }
+            } else if (!("PRESIDENTE".equals(rolSolicitante) || "COORDINADOR".equals(rolSolicitante))) {
                 com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
                         .setExito(false)
                         .setMensaje("Permiso denegado: Solo PRESIDENTE o COORDINADOR pueden quitar miembros")
@@ -190,6 +227,7 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
                 responseObserver.onCompleted();
                 return;
             }
+
             eventoService.quitarParticipante(request.getEventoId(), request.getMiembroId());
             com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
                     .setExito(true)

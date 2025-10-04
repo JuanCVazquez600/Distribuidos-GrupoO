@@ -1,11 +1,6 @@
 package Distribuidos_GrupoO.ServidorGRPC.model;
 
 import javax.persistence.*;
-
-import Distribuidos_GrupoO.ServidorGRPC.model.EventoMiembros;
-import Distribuidos_GrupoO.ServidorGRPC.model.EventoSolidario;
-import Distribuidos_GrupoO.ServidorGRPC.model.InventarioDeDonaciones;
-import Distribuidos_GrupoO.ServidorGRPC.model.Usuario;
 import lombok.*;
 
 import java.time.LocalDateTime;
