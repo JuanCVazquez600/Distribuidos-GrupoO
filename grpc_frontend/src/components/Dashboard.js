@@ -30,8 +30,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
 
   useEffect(() => {
     fetchData();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -124,6 +124,7 @@ const Dashboard = ({ currentUser, onLogout }) => {
       // Refresh data
       if (type === 'user') {
         await fetchUsuarios();
+        await fetchEventos();
       } else if (type === 'event') {
         await fetchEventos();
       } else if (type === 'inventory') {
@@ -147,8 +148,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
     setFormType(null);
   };
 
+  // eslint-disable-next-line no-unused-vars
   const showAlert = (message, type) => {
-    // Simple alert implementation - could be enhanced with a proper toast system
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
     alertDiv.innerHTML = `<span>${message}</span>`;
@@ -706,7 +707,7 @@ const Dashboard = ({ currentUser, onLogout }) => {
 
               <h3 style={{ marginBottom: 'var(--spacing-md)', color: 'var(--text-primary)' }}>Agregar Miembro</h3>
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {usuarios.filter(u => !selectedEvent.miembros || !selectedEvent.miembros.some(m => m.id === u.id)).map(user => (
+                {usuarios.filter(u => u.activo && (!selectedEvent.miembros || !selectedEvent.miembros.some(m => m.id === u.id))).map(user => (
                   <div key={user.id} style={{
                     display: 'flex',
                     justifyContent: 'space-between',
