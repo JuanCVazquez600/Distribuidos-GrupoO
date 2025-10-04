@@ -5,14 +5,15 @@ import Distribuidos_GrupoO.ServidorGRPC.model.Usuario;
 import Distribuidos_GrupoO.ServidorGRPC.repository.EventoSolidarioRepository;
 import Distribuidos_GrupoO.ServidorGRPC.repository.UsuarioRepository;
 import Distribuidos_GrupoO.ServidorGRPC.service.IEventoSolidarioService;
-import org.lognet.springboot.grpc.GRpcService;
+import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@GRpcService
+@Service
 public class EventoSolidarioServiceImplementation implements IEventoSolidarioService {
 
     @Autowired
@@ -57,8 +58,12 @@ public class EventoSolidarioServiceImplementation implements IEventoSolidarioSer
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventoSolidario> listarEventos() {
-        return eventoRepository.findAll();
+        List<EventoSolidario> eventos = eventoRepository.findAll();
+        // Forzar carga de miembros para evitar problema de LazyInitializationException
+        eventos.forEach(evento -> evento.getMiembros().size());
+        return eventos;
     }
 
     @Override

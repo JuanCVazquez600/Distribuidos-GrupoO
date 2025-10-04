@@ -3,12 +3,12 @@ package Distribuidos_GrupoO.ServidorGRPC.service.implementation;
 import Distribuidos_GrupoO.ServidorGRPC.model.Usuario;
 import Distribuidos_GrupoO.ServidorGRPC.repository.UsuarioRepository;
 import Distribuidos_GrupoO.ServidorGRPC.service.IUsuarioService;
-import org.lognet.springboot.grpc.GRpcService;
+import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Optional;
 
-@GRpcService
+@Service
 public class UsuarioServiceImplementation implements IUsuarioService {
 
     @Autowired
@@ -84,12 +84,25 @@ public class UsuarioServiceImplementation implements IUsuarioService {
 
     @Override
     public List<Usuario> listarUsuarios() {
-        return usuarioRepository.findAll();
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        System.out.println("Usuarios encontrados: " + usuarios.size());
+        return usuarios;
     }
 
     @Override
     public Usuario buscarPorNombreUsuario(String nombreUsuario) {
         return usuarioRepository.findByNombreUsuario(nombreUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    @Override
+    public Usuario buscarPorId(Integer id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    public Usuario buscarPorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 

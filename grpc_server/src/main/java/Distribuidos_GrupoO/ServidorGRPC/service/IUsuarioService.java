@@ -11,6 +11,7 @@ public interface IUsuarioService {
     List<Usuario> listarUsuarios();
     void bajaUsuario(Integer id);
     Usuario buscarPorNombreUsuario(String nombreUsuario);
+    Usuario buscarPorId(Integer id);
     Usuario guardarUsuario(Usuario usuario);
 
 }

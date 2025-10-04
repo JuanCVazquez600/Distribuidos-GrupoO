@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\reventos.proto\x12\x07\x65ventos\"\x07\n\x05\x45mpty\"~\n\rEventoRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scripcion\x18\x03 \x01(\t\x12\x11\n\tfechaHora\x18\x04 \x01(\t\x12)\n\x08miembros\x18\x05 \x03(\x0b\x32\x17.eventos.MiembroRequest\"\x1d\n\x0f\x45ventoIdRequest\x12\n\n\x02id\x18\x01 \x01(\x05\">\n\x0eMiembroRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x10\n\x08\x61pellido\x18\x03 \x01(\t\"<\n\x15\x41signarMiembroRequest\x12\x10\n\x08\x65ventoId\x18\x01 \x01(\x05\x12\x11\n\tmiembroId\x18\x02 \x01(\x05\";\n\x14QuitarMiembroRequest\x12\x10\n\x08\x65ventoId\x18\x01 \x01(\x05\x12\x11\n\tmiembroId\x18\x02 \x01(\x05\":\n\x0f\x45ventosResponse\x12\'\n\x07\x65ventos\x18\x01 \x03(\x0b\x32\x16.eventos.EventoRequest\"+\n\tRespuesta\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t2\x8a\x03\n\rEventoService\x12\x39\n\x0b\x43rearEvento\x12\x16.eventos.EventoRequest\x1a\x12.eventos.Respuesta\x12=\n\x0fModificarEvento\x12\x16.eventos.EventoRequest\x1a\x12.eventos.Respuesta\x12\x39\n\rListarEventos\x12\x0e.eventos.Empty\x1a\x18.eventos.EventosResponse\x12:\n\nBajaEvento\x12\x18.eventos.EventoIdRequest\x1a\x12.eventos.Respuesta\x12\x44\n\x0e\x41signarMiembro\x12\x1e.eventos.AsignarMiembroRequest\x1a\x12.eventos.Respuesta\x12\x42\n\rQuitarMiembro\x12\x1d.eventos.QuitarMiembroRequest\x1a\x12.eventos.RespuestaB \n\x10\x63om.grpc.eventosB\x0c\x45ventosProtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\reventos.proto\x12\x07\x65ventos\"\x07\n\x05\x45mpty\"\x8e\x01\n\rEventoRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scripcion\x18\x03 \x01(\t\x12\x11\n\tfechaHora\x18\x04 \x01(\t\x12)\n\x08miembros\x18\x05 \x03(\x0b\x32\x17.eventos.MiembroRequest\x12\x0e\n\x06userId\x18\x06 \x01(\x05\"-\n\x0f\x45ventoIdRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\x05\">\n\x0eMiembroRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x10\n\x08\x61pellido\x18\x03 \x01(\t\"L\n\x15\x41signarMiembroRequest\x12\x10\n\x08\x65ventoId\x18\x01 \x01(\x05\x12\x11\n\tmiembroId\x18\x02 \x01(\x05\x12\x0e\n\x06userId\x18\x03 \x01(\x05\"K\n\x14QuitarMiembroRequest\x12\x10\n\x08\x65ventoId\x18\x01 \x01(\x05\x12\x11\n\tmiembroId\x18\x02 \x01(\x05\x12\x0e\n\x06userId\x18\x03 \x01(\x05\":\n\x0f\x45ventosResponse\x12\'\n\x07\x65ventos\x18\x01 \x03(\x0b\x32\x16.eventos.EventoRequest\"+\n\tRespuesta\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t2\x8a\x03\n\rEventoService\x12\x39\n\x0b\x43rearEvento\x12\x16.eventos.EventoRequest\x1a\x12.eventos.Respuesta\x12=\n\x0fModificarEvento\x12\x16.eventos.EventoRequest\x1a\x12.eventos.Respuesta\x12\x39\n\rListarEventos\x12\x0e.eventos.Empty\x1a\x18.eventos.EventosResponse\x12:\n\nBajaEvento\x12\x18.eventos.EventoIdRequest\x1a\x12.eventos.Respuesta\x12\x44\n\x0e\x41signarMiembro\x12\x1e.eventos.AsignarMiembroRequest\x1a\x12.eventos.Respuesta\x12\x42\n\rQuitarMiembro\x12\x1d.eventos.QuitarMiembroRequest\x1a\x12.eventos.RespuestaB \n\x10\x63om.grpc.eventosB\x0c\x45ventosProtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,20 +34,20 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._serialized_options = b'\n\020com.grpc.eventosB\014EventosProto'
   _globals['_EMPTY']._serialized_start=26
   _globals['_EMPTY']._serialized_end=33
-  _globals['_EVENTOREQUEST']._serialized_start=35
-  _globals['_EVENTOREQUEST']._serialized_end=161
-  _globals['_EVENTOIDREQUEST']._serialized_start=163
-  _globals['_EVENTOIDREQUEST']._serialized_end=192
-  _globals['_MIEMBROREQUEST']._serialized_start=194
-  _globals['_MIEMBROREQUEST']._serialized_end=256
-  _globals['_ASIGNARMIEMBROREQUEST']._serialized_start=258
-  _globals['_ASIGNARMIEMBROREQUEST']._serialized_end=318
-  _globals['_QUITARMIEMBROREQUEST']._serialized_start=320
-  _globals['_QUITARMIEMBROREQUEST']._serialized_end=379
-  _globals['_EVENTOSRESPONSE']._serialized_start=381
-  _globals['_EVENTOSRESPONSE']._serialized_end=439
-  _globals['_RESPUESTA']._serialized_start=441
-  _globals['_RESPUESTA']._serialized_end=484
-  _globals['_EVENTOSERVICE']._serialized_start=487
-  _globals['_EVENTOSERVICE']._serialized_end=881
+  _globals['_EVENTOREQUEST']._serialized_start=36
+  _globals['_EVENTOREQUEST']._serialized_end=178
+  _globals['_EVENTOIDREQUEST']._serialized_start=180
+  _globals['_EVENTOIDREQUEST']._serialized_end=225
+  _globals['_MIEMBROREQUEST']._serialized_start=227
+  _globals['_MIEMBROREQUEST']._serialized_end=289
+  _globals['_ASIGNARMIEMBROREQUEST']._serialized_start=291
+  _globals['_ASIGNARMIEMBROREQUEST']._serialized_end=367
+  _globals['_QUITARMIEMBROREQUEST']._serialized_start=369
+  _globals['_QUITARMIEMBROREQUEST']._serialized_end=444
+  _globals['_EVENTOSRESPONSE']._serialized_start=446
+  _globals['_EVENTOSRESPONSE']._serialized_end=504
+  _globals['_RESPUESTA']._serialized_start=506
+  _globals['_RESPUESTA']._serialized_end=549
+  _globals['_EVENTOSERVICE']._serialized_start=552
+  _globals['_EVENTOSERVICE']._serialized_end=946
 # @@protoc_insertion_point(module_scope)

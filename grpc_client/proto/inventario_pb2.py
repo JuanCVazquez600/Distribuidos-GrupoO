@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10inventario.proto\x12\ninventario\"\x07\n\x05\x45mpty\"\x81\x01\n\x0f\x44onacionRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12(\n\tcategoria\x18\x02 \x01(\x0e\x32\x15.inventario.Categoria\x12\x13\n\x0b\x64\x65scripcion\x18\x03 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x04 \x01(\x05\x12\x11\n\teliminado\x18\x05 \x01(\x08\"\x1f\n\x11\x44onacionIdRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"E\n\x12\x44onacionesResponse\x12/\n\ndonaciones\x18\x01 \x03(\x0b\x32\x1b.inventario.DonacionRequest\"+\n\tRespuesta\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t*H\n\tCategoria\x12\x08\n\x04ROPA\x10\x00\x12\r\n\tALIMENTOS\x10\x01\x12\x0c\n\x08JUGUETES\x10\x02\x12\x14\n\x10UTILES_ESCOLARES\x10\x03\x32\xb0\x02\n\x11InventarioService\x12\x45\n\x0f\x41gregarDonacion\x12\x1b.inventario.DonacionRequest\x1a\x15.inventario.Respuesta\x12G\n\x11ModificarDonacion\x12\x1b.inventario.DonacionRequest\x1a\x15.inventario.Respuesta\x12\x45\n\x10ListarDonaciones\x12\x11.inventario.Empty\x1a\x1e.inventario.DonacionesResponse\x12\x44\n\x0c\x42\x61jaDonacion\x12\x1d.inventario.DonacionIdRequest\x1a\x15.inventario.RespuestaB&\n\x13\x63om.grpc.inventarioB\x0fInventarioProtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10inventario.proto\x12\ninventario\"\x07\n\x05\x45mpty\"\x91\x01\n\x0f\x44onacionRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12(\n\tcategoria\x18\x02 \x01(\x0e\x32\x15.inventario.Categoria\x12\x13\n\x0b\x64\x65scripcion\x18\x03 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x04 \x01(\x05\x12\x11\n\teliminado\x18\x05 \x01(\x08\x12\x0e\n\x06userId\x18\x06 \x01(\x05\"/\n\x11\x44onacionIdRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\x05\"E\n\x12\x44onacionesResponse\x12/\n\ndonaciones\x18\x01 \x03(\x0b\x32\x1b.inventario.DonacionRequest\"+\n\tRespuesta\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t*H\n\tCategoria\x12\x08\n\x04ROPA\x10\x00\x12\r\n\tALIMENTOS\x10\x01\x12\x0c\n\x08JUGUETES\x10\x02\x12\x14\n\x10UTILES_ESCOLARES\x10\x03\x32\xb0\x02\n\x11InventarioService\x12\x45\n\x0f\x41gregarDonacion\x12\x1b.inventario.DonacionRequest\x1a\x15.inventario.Respuesta\x12G\n\x11ModificarDonacion\x12\x1b.inventario.DonacionRequest\x1a\x15.inventario.Respuesta\x12\x45\n\x10ListarDonaciones\x12\x11.inventario.Empty\x1a\x1e.inventario.DonacionesResponse\x12\x44\n\x0c\x42\x61jaDonacion\x12\x1d.inventario.DonacionIdRequest\x1a\x15.inventario.RespuestaB&\n\x13\x63om.grpc.inventarioB\x0fInventarioProtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,18 +32,18 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'inventario_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n\023com.grpc.inventarioB\017InventarioProto'
-  _globals['_CATEGORIA']._serialized_start=322
-  _globals['_CATEGORIA']._serialized_end=394
+  _globals['_CATEGORIA']._serialized_start=354
+  _globals['_CATEGORIA']._serialized_end=426
   _globals['_EMPTY']._serialized_start=32
   _globals['_EMPTY']._serialized_end=39
   _globals['_DONACIONREQUEST']._serialized_start=42
-  _globals['_DONACIONREQUEST']._serialized_end=171
-  _globals['_DONACIONIDREQUEST']._serialized_start=173
-  _globals['_DONACIONIDREQUEST']._serialized_end=204
-  _globals['_DONACIONESRESPONSE']._serialized_start=206
-  _globals['_DONACIONESRESPONSE']._serialized_end=275
-  _globals['_RESPUESTA']._serialized_start=277
-  _globals['_RESPUESTA']._serialized_end=320
-  _globals['_INVENTARIOSERVICE']._serialized_start=397
-  _globals['_INVENTARIOSERVICE']._serialized_end=701
+  _globals['_DONACIONREQUEST']._serialized_end=187
+  _globals['_DONACIONIDREQUEST']._serialized_start=189
+  _globals['_DONACIONIDREQUEST']._serialized_end=236
+  _globals['_DONACIONESRESPONSE']._serialized_start=238
+  _globals['_DONACIONESRESPONSE']._serialized_end=307
+  _globals['_RESPUESTA']._serialized_start=309
+  _globals['_RESPUESTA']._serialized_end=352
+  _globals['_INVENTARIOSERVICE']._serialized_start=429
+  _globals['_INVENTARIOSERVICE']._serialized_end=733
 # @@protoc_insertion_point(module_scope)

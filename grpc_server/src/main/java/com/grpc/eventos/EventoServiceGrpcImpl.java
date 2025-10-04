@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import Distribuidos_GrupoO.ServidorGRPC.model.EventoSolidario;
 import Distribuidos_GrupoO.ServidorGRPC.model.Usuario;
 import Distribuidos_GrupoO.ServidorGRPC.service.implementation.EventoSolidarioServiceImplementation;
+import Distribuidos_GrupoO.ServidorGRPC.service.implementation.UsuarioServiceImplementation;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,11 +21,23 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
     @Autowired
     private EventoSolidarioServiceImplementation eventoService;
 
+    @Autowired
+    private UsuarioServiceImplementation usuarioService;
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     @Override
     public void crearEvento(com.grpc.eventos.EventosProto.EventoRequest request, StreamObserver<com.grpc.eventos.EventosProto.Respuesta> responseObserver) {
         try {
+            if (!hasPermission(request.getUserId(), "GESTIONAR_EVENTOS")) {
+                com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Permiso denegado: Solo PRESIDENTE o COORDINADOR pueden crear eventos")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
             EventoSolidario evento = mapProtoToEvento(request);
             eventoService.crearEvento(evento);
             com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
@@ -45,6 +58,15 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
     @Override
     public void modificarEvento(com.grpc.eventos.EventosProto.EventoRequest request, StreamObserver<com.grpc.eventos.EventosProto.Respuesta> responseObserver) {
         try {
+            if (!hasPermission(request.getUserId(), "GESTIONAR_EVENTOS")) {
+                com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Permiso denegado: Solo PRESIDENTE o COORDINADOR pueden modificar eventos")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
             EventoSolidario evento = mapProtoToEvento(request);
             eventoService.modificarEvento(evento);
             com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
@@ -80,6 +102,38 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
     @Override
     public void bajaEvento(com.grpc.eventos.EventosProto.EventoIdRequest request, StreamObserver<com.grpc.eventos.EventosProto.Respuesta> responseObserver) {
         try {
+            if (!hasPermission(request.getUserId(), "GESTIONAR_EVENTOS")) {
+                com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Permiso denegado: Solo PRESIDENTE o COORDINADOR pueden dar de baja eventos")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
+
+            // Validar que el evento no sea pasado
+            EventoSolidario evento = eventoService.buscarPorId(request.getId());
+            if (evento == null) {
+                com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Evento no encontrado")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
+
+            if (evento.getFechaEvento().isBefore(LocalDateTime.now())) {
+                com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("No se puede dar de baja un evento que ya ha pasado")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
+
             eventoService.eliminarEvento(request.getId());
             com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
                     .setExito(true)
@@ -99,6 +153,15 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
     @Override
     public void asignarMiembro(com.grpc.eventos.EventosProto.AsignarMiembroRequest request, StreamObserver<com.grpc.eventos.EventosProto.Respuesta> responseObserver) {
         try {
+            if (!hasPermission(request.getUserId(), "GESTIONAR_EVENTOS")) {
+                com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Permiso denegado: Solo PRESIDENTE o COORDINADOR pueden asignar miembros")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
             eventoService.agregarParticipante(request.getEventoId(), request.getMiembroId());
             com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
                     .setExito(true)
@@ -118,6 +181,15 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
     @Override
     public void quitarMiembro(com.grpc.eventos.EventosProto.QuitarMiembroRequest request, StreamObserver<com.grpc.eventos.EventosProto.Respuesta> responseObserver) {
         try {
+            if (!hasPermission(request.getUserId(), "GESTIONAR_EVENTOS")) {
+                com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Permiso denegado: Solo PRESIDENTE o COORDINADOR pueden quitar miembros")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
             eventoService.quitarParticipante(request.getEventoId(), request.getMiembroId());
             com.grpc.eventos.EventosProto.Respuesta respuesta = com.grpc.eventos.EventosProto.Respuesta.newBuilder()
                     .setExito(true)
@@ -147,7 +219,7 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
         List<Usuario> miembros = proto.getMiembrosList().stream()
                 .map(this::mapProtoToUsuario)
                 .collect(Collectors.toList());
-        evento.setMiembros((Set<Usuario>) miembros);
+        evento.setMiembros(new java.util.HashSet<>(miembros));
         return evento;
     }
 
@@ -179,5 +251,23 @@ public class EventoServiceGrpcImpl extends com.grpc.eventos.EventoServiceGrpc.Ev
                 .setNombre(usuario.getNombre())
                 .setApellido(usuario.getApellido())
                 .build();
+    }
+
+    private boolean hasPermission(int userId, String action) {
+        try {
+            Usuario usuario = usuarioService.buscarPorId(userId);
+            if (usuario == null) return false;
+            String rol = usuario.getRol();
+            switch (action) {
+                case "GESTIONAR_EVENTOS":
+                    return "PRESIDENTE".equals(rol) || "COORDINADOR".equals(rol);
+                case "VER_EVENTOS":
+                    return true; // Todos pueden ver
+                default:
+                    return true; // Para acciones no especificadas, permitir
+            }
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

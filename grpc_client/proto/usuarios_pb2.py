@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eusuarios.proto\x12\x08usuarios\"\x07\n\x05\x45mpty\"\xa2\x01\n\x0eUsuarioRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x15\n\rnombreUsuario\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\r\n\x05\x63lave\x18\x06 \x01(\t\x12\r\n\x05\x65mail\x18\x07 \x01(\t\x12\x0b\n\x03rol\x18\x08 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\t \x01(\x08\"\x1e\n\x10UsuarioIdRequest\x12\n\n\x02id\x18\x01 \x01(\x05\">\n\x10UsuariosResponse\x12*\n\x08usuarios\x18\x01 \x03(\x0b\x32\x18.usuarios.UsuarioRequest\"+\n\tRespuesta\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\"3\n\x0cLoginRequest\x12\x14\n\x0cusuarioEmail\x18\x01 \x01(\t\x12\r\n\x05\x63lave\x18\x02 \x01(\t\"Z\n\rLoginResponse\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\x12)\n\x07usuario\x18\x03 \x01(\x0b\x32\x18.usuarios.UsuarioRequest2\xcb\x02\n\x0eUsuarioService\x12=\n\x0c\x43rearUsuario\x12\x18.usuarios.UsuarioRequest\x1a\x13.usuarios.Respuesta\x12\x41\n\x10ModificarUsuario\x12\x18.usuarios.UsuarioRequest\x1a\x13.usuarios.Respuesta\x12=\n\x0eListarUsuarios\x12\x0f.usuarios.Empty\x1a\x1a.usuarios.UsuariosResponse\x12>\n\x0b\x42\x61jaUsuario\x12\x1a.usuarios.UsuarioIdRequest\x1a\x13.usuarios.Respuesta\x12\x38\n\x05Login\x12\x16.usuarios.LoginRequest\x1a\x17.usuarios.LoginResponseB\"\n\x11\x63om.grpc.usuariosB\rUsuariosProtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eusuarios.proto\x12\x08usuarios\"\x07\n\x05\x45mpty\"\xb2\x01\n\x0eUsuarioRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x15\n\rnombreUsuario\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\r\n\x05\x63lave\x18\x06 \x01(\t\x12\r\n\x05\x65mail\x18\x07 \x01(\t\x12\x0b\n\x03rol\x18\x08 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\t \x01(\x08\x12\x0e\n\x06userId\x18\n \x01(\x05\".\n\x10UsuarioIdRequest\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\x05\">\n\x10UsuariosResponse\x12*\n\x08usuarios\x18\x01 \x03(\x0b\x32\x18.usuarios.UsuarioRequest\"+\n\tRespuesta\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\"3\n\x0cLoginRequest\x12\x14\n\x0cusuarioEmail\x18\x01 \x01(\t\x12\r\n\x05\x63lave\x18\x02 \x01(\t\"Z\n\rLoginResponse\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\x12)\n\x07usuario\x18\x03 \x01(\x0b\x32\x18.usuarios.UsuarioRequest2\xcb\x02\n\x0eUsuarioService\x12=\n\x0c\x43rearUsuario\x12\x18.usuarios.UsuarioRequest\x1a\x13.usuarios.Respuesta\x12\x41\n\x10ModificarUsuario\x12\x18.usuarios.UsuarioRequest\x1a\x13.usuarios.Respuesta\x12=\n\x0eListarUsuarios\x12\x0f.usuarios.Empty\x1a\x1a.usuarios.UsuariosResponse\x12>\n\x0b\x42\x61jaUsuario\x12\x1a.usuarios.UsuarioIdRequest\x1a\x13.usuarios.Respuesta\x12\x38\n\x05Login\x12\x16.usuarios.LoginRequest\x1a\x17.usuarios.LoginResponseB\"\n\x11\x63om.grpc.usuariosB\rUsuariosProtob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,17 +35,17 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_EMPTY']._serialized_start=28
   _globals['_EMPTY']._serialized_end=35
   _globals['_USUARIOREQUEST']._serialized_start=38
-  _globals['_USUARIOREQUEST']._serialized_end=200
-  _globals['_USUARIOIDREQUEST']._serialized_start=202
-  _globals['_USUARIOIDREQUEST']._serialized_end=232
-  _globals['_USUARIOSRESPONSE']._serialized_start=234
-  _globals['_USUARIOSRESPONSE']._serialized_end=296
-  _globals['_RESPUESTA']._serialized_start=298
-  _globals['_RESPUESTA']._serialized_end=341
-  _globals['_LOGINREQUEST']._serialized_start=343
-  _globals['_LOGINREQUEST']._serialized_end=394
-  _globals['_LOGINRESPONSE']._serialized_start=396
-  _globals['_LOGINRESPONSE']._serialized_end=486
-  _globals['_USUARIOSERVICE']._serialized_start=489
-  _globals['_USUARIOSERVICE']._serialized_end=820
+  _globals['_USUARIOREQUEST']._serialized_end=216
+  _globals['_USUARIOIDREQUEST']._serialized_start=218
+  _globals['_USUARIOIDREQUEST']._serialized_end=264
+  _globals['_USUARIOSRESPONSE']._serialized_start=266
+  _globals['_USUARIOSRESPONSE']._serialized_end=328
+  _globals['_RESPUESTA']._serialized_start=330
+  _globals['_RESPUESTA']._serialized_end=373
+  _globals['_LOGINREQUEST']._serialized_start=375
+  _globals['_LOGINREQUEST']._serialized_end=426
+  _globals['_LOGINRESPONSE']._serialized_start=428
+  _globals['_LOGINRESPONSE']._serialized_end=518
+  _globals['_USUARIOSERVICE']._serialized_start=521
+  _globals['_USUARIOSERVICE']._serialized_end=852
 # @@protoc_insertion_point(module_scope)

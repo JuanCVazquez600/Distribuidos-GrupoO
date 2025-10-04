@@ -3,11 +3,13 @@ package Distribuidos_GrupoO.ServidorGRPC.service.implementation;
 import Distribuidos_GrupoO.ServidorGRPC.model.InventarioDeDonaciones;
 import Distribuidos_GrupoO.ServidorGRPC.repository.InventarioDeDonacionesRepository;
 import Distribuidos_GrupoO.ServidorGRPC.service.IInventarioDeDonacionesService;
+import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class InventarioDeDonacionesServiceImplementation implements IInventarioDeDonacionesService {
 
 

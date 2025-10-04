@@ -17,6 +17,15 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
     @Override
     public void crearUsuario(com.grpc.usuarios.UsuariosProto.UsuarioRequest request, StreamObserver<com.grpc.usuarios.UsuariosProto.Respuesta> responseObserver) {
         try {
+            if (!hasPermission(request.getUserId(), "CREAR_USUARIO")) {
+                com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Permiso denegado: Solo el PRESIDENTE puede crear usuarios")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
             Usuario usuario = mapProtoToUsuario(request);
             usuarioService.crearUsuario(usuario);
             com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
@@ -37,6 +46,15 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
     @Override
     public void modificarUsuario(com.grpc.usuarios.UsuariosProto.UsuarioRequest request, StreamObserver<com.grpc.usuarios.UsuariosProto.Respuesta> responseObserver) {
         try {
+            if (!hasPermission(request.getUserId(), "MODIFICAR_USUARIO")) {
+                com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Permiso denegado: Solo el PRESIDENTE puede modificar usuarios")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
             Usuario usuario = mapProtoToUsuario(request);
             usuarioService.modificarUsuario(usuario);
             com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
@@ -73,6 +91,15 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
     @Override
     public void bajaUsuario(com.grpc.usuarios.UsuariosProto.UsuarioIdRequest request, StreamObserver<com.grpc.usuarios.UsuariosProto.Respuesta> responseObserver) {
         try {
+            if (!hasPermission(request.getUserId(), "BAJA_USUARIO")) {
+                com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
+                        .setExito(false)
+                        .setMensaje("Permiso denegado: Solo el PRESIDENTE puede dar de baja usuarios")
+                        .build();
+                responseObserver.onNext(respuesta);
+                responseObserver.onCompleted();
+                return;
+            }
             usuarioService.bajaUsuario(request.getId());
             com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
                     .setExito(true)
@@ -99,7 +126,7 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
         com.grpc.usuarios.UsuariosProto.UsuarioRequest usuarioProto = null;
 
         try {
-            Usuario usuario = usuarioService.buscarPorNombreUsuario(email); // O método login si lo tenés
+            Usuario usuario = usuarioService.buscarPorEmail(email); // Cambiado para buscar por email
             // Prueba
             if (usuario != null && clave.equals(usuario.getClave())) {
                 exito = true;
@@ -150,5 +177,29 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
                 .setRol(usuario.getRol())
                 .setActivo(usuario.getActivo())
                 .build();
+    }
+
+    private boolean hasPermission(int userId, String action) {
+        try {
+            Usuario usuario = usuarioService.buscarPorId(userId);
+            if (usuario == null) return false;
+            String rol = usuario.getRol();
+            switch (action) {
+                case "CREAR_USUARIO":
+                case "MODIFICAR_USUARIO":
+                case "BAJA_USUARIO":
+                    return "PRESIDENTE".equals(rol);
+                case "GESTIONAR_EVENTOS":
+                    return "PRESIDENTE".equals(rol) || "COORDINADOR".equals(rol);
+                case "GESTIONAR_INVENTARIO":
+                    return "PRESIDENTE".equals(rol) || "VOCAL".equals(rol);
+                case "VER_EVENTOS":
+                    return true; // Todos pueden ver
+                default:
+                    return true; // Para acciones no especificadas, permitir
+            }
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

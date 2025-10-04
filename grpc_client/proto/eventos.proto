@@ -22,10 +22,12 @@ message EventoRequest {
   string descripcion = 3;
   string fechaHora = 4; // ISO 8601 string
   repeated MiembroRequest miembros = 5;
+  int32 userId = 6; // ID del usuario que realiza la acción
 }
 
 message EventoIdRequest {
   int32 id = 1;
+  int32 userId = 2; // ID del usuario que realiza la acción
 }
 
 message MiembroRequest {
@@ -37,11 +39,13 @@ message MiembroRequest {
 message AsignarMiembroRequest {
   int32 eventoId = 1;
   int32 miembroId = 2;
+  int32 userId = 3; // ID del usuario que realiza la acción
 }
 
 message QuitarMiembroRequest {
   int32 eventoId = 1;
   int32 miembroId = 2;
+  int32 userId = 3; // ID del usuario que realiza la acción
 }
 
 message EventosResponse {

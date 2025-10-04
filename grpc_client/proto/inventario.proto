@@ -27,10 +27,12 @@ message DonacionRequest {
   string descripcion = 3;
   int32 cantidad = 4;
   bool eliminado = 5;
+  int32 userId = 6; // ID del usuario que realiza la acción
 }
 
 message DonacionIdRequest {
   int32 id = 1;
+  int32 userId = 2; // ID del usuario que realiza la acción
 }
 
 message DonacionesResponse {
