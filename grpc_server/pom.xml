@@ -24,8 +24,16 @@
                     <artifactId>grpc-stub</artifactId>
                     <version>1.56.0</version>
                 </dependency>
+
+                <!-- Dependencia para Kafka con Spring-->
+                <dependency>
+                    <groupId>org.springframework.kafka</groupId>
+                    <artifactId>spring-kafka</artifactId>
+                    <version>3.2.2</version>
+                </dependency>
             </dependencies>
         </dependencyManagement>
+        
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
