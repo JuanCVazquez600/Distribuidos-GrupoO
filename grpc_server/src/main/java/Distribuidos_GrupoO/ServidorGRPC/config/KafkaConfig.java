@@ -1,6 +1,7 @@
 package Distribuidos_GrupoO.ServidorGRPC.config;
 
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationOffer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationRequest;
 import org.springframework.kafka.core.ProducerFactory;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -49,6 +50,24 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, DonationOffer> donationOfferKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, DonationOffer> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(donationOfferConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, DonationRequest> donationRequestConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "solicitudes-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(DonationRequest.class, false));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, DonationRequest> donationRequestKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, DonationRequest> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(donationRequestConsumerFactory());
         return factory;
     }
 }
