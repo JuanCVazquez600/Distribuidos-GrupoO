@@ -70,4 +70,22 @@ public class KafkaConfig {
         factory.setConsumerFactory(donationRequestConsumerFactory());
         return factory;
     }
+
+    @Bean
+    public ConsumerFactory<String, Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer> donationTransferConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "transferencias-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer.class, false));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer> donationTransferKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(donationTransferConsumerFactory());
+        return factory;
+    }
 }

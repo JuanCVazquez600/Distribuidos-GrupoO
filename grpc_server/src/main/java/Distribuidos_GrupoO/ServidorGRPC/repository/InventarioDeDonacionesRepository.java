@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InventarioDeDonacionesRepository extends JpaRepository<InventarioDeDonaciones, Integer> {
@@ -15,4 +16,6 @@ public interface InventarioDeDonacionesRepository extends JpaRepository<Inventar
     List<InventarioDeDonaciones> findByCategoria(InventarioDeDonaciones.CategoriaEnum categoria);
 
     List<InventarioDeDonaciones> findByEliminadoFalse();
+
+    Optional<InventarioDeDonaciones> findByCategoriaAndDescripcionAndEliminadoFalse(InventarioDeDonaciones.CategoriaEnum categoria, String descripcion);
 }

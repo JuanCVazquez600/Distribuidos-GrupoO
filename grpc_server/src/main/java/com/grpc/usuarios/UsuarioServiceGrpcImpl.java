@@ -34,7 +34,7 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
             Usuario usuarioCreado = usuarioService.crearUsuario(usuario);
             com.grpc.usuarios.UsuariosProto.Respuesta respuesta = com.grpc.usuarios.UsuariosProto.Respuesta.newBuilder()
                     .setExito(true)
-                    .setMensaje("Usuario creado correctamente. Contraseña: " + usuarioCreado.getClave()) // Temporal para testing
+                    .setMensaje("Usuario creado correctamente.")
                     .build();
             responseObserver.onNext(respuesta);
         } catch (Exception e) {
@@ -130,8 +130,7 @@ public class UsuarioServiceGrpcImpl extends com.grpc.usuarios.UsuarioServiceGrpc
         com.grpc.usuarios.UsuariosProto.UsuarioRequest usuarioProto = null;
 
         try {
-            Usuario usuario = usuarioService.buscarPorEmail(email); // Cambiado para buscar por email
-            // Prueba
+            Usuario usuario = usuarioService.buscarPorEmail(email);
             if (usuario != null && passwordEncoder.matches(clave, usuario.getClave())) {
                 exito = true;
                 mensaje = "Login exitoso";

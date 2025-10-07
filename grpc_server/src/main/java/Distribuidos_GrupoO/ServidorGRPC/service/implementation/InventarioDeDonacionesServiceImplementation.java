@@ -49,4 +49,37 @@ public class InventarioDeDonacionesServiceImplementation implements IInventarioD
     public List<InventarioDeDonaciones> listarInventarios() {
         return inventarioRepository.findAll();
     }
+
+    @Override
+    public Optional<InventarioDeDonaciones> buscarPorCategoriaYDescripcion(InventarioDeDonaciones.CategoriaEnum categoria, String descripcion) {
+        return inventarioRepository.findByCategoriaAndDescripcionAndEliminadoFalse(categoria, descripcion);
+    }
+
+    @Override
+    public InventarioDeDonaciones actualizarCantidad(InventarioDeDonaciones inventario, int cantidadADiferencia) {
+        int nuevaCantidad = inventario.getCantidad() + cantidadADiferencia;
+        if (nuevaCantidad < 0) {
+            throw new RuntimeException("Cantidad insuficiente en inventario para realizar la operación");
+        }
+        inventario.setCantidad(nuevaCantidad);
+        return inventarioRepository.save(inventario);
+    }
+
+    @Override
+    public InventarioDeDonaciones crearOActualizarInventario(InventarioDeDonaciones.CategoriaEnum categoria, String descripcion, int cantidad) {
+        Optional<InventarioDeDonaciones> opt = buscarPorCategoriaYDescripcion(categoria, descripcion);
+        InventarioDeDonaciones inventario;
+        if (opt.isPresent()) {
+            inventario = opt.get();
+            inventario.setCantidad(inventario.getCantidad() + cantidad);
+        } else {
+            inventario = new InventarioDeDonaciones();
+            inventario.setCategoria(categoria);
+            inventario.setDescripcion(descripcion);
+            inventario.setCantidad(cantidad);
+            inventario.setEliminado(false);
+            inventario.setFechaAlta(java.time.LocalDateTime.now());
+        }
+        return inventarioRepository.save(inventario);
+    }
 }
