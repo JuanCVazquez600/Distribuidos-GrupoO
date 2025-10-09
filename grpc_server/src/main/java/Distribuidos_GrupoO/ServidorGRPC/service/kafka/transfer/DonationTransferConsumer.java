@@ -1,4 +1,4 @@
-package Distribuidos_GrupoO.ServidorGRPC.service.kafka;
+package Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer;
 
 import Distribuidos_GrupoO.ServidorGRPC.service.IInventarioDeDonacionesService;
 import Distribuidos_GrupoO.ServidorGRPC.model.InventarioDeDonaciones;

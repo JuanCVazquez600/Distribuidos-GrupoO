@@ -1,4 +1,4 @@
-package Distribuidos_GrupoO.ServidorGRPC.service.kafka;
+package Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer;
 
 import java.util.List;
 
@@ -15,14 +15,6 @@ public class DonationTransfer {
         this.donations = donations;
     }
 
-    public String getRequestId() { return requestId; }
-    public void setRequestId(String requestId) { this.requestId = requestId; }
-
-    public String getDonorOrganizationId() { return donorOrganizationId; }
-    public void setDonorOrganizationId(String donorOrganizationId) { this.donorOrganizationId = donorOrganizationId; }
-
-    public List<DonationItem> getDonations() { return donations; }
-    public void setDonations(List<DonationItem> donations) { this.donations = donations; }
 
     public static class DonationItem {
         private String category;
@@ -42,4 +34,13 @@ public class DonationTransfer {
         public String getQuantity() { return quantity; }
         public void setQuantity(String quantity) { this.quantity = quantity; }
     }
+
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
+
+    public String getDonorOrganizationId() { return donorOrganizationId; }
+    public void setDonorOrganizationId(String donorOrganizationId) { this.donorOrganizationId = donorOrganizationId; }
+
+    public List<DonationItem> getDonations() { return donations; }
+    public void setDonations(List<DonationItem> donations) { this.donations = donations; }
 }

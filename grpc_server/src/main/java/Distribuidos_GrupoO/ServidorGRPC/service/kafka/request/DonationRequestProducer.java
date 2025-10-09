@@ -1,4 +1,4 @@
-package Distribuidos_GrupoO.ServidorGRPC.service.kafka;
+package Distribuidos_GrupoO.ServidorGRPC.service.kafka.request;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;

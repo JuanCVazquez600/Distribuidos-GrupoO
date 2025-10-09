@@ -1,8 +1,8 @@
 package Distribuidos_GrupoO.ServidorGRPC.controller;
 
-import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationOffer;
-import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationOfferConsumer;
-import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationOfferProducer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.offer.DonationOffer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.offer.DonationOfferConsumer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.offer.DonationOfferProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

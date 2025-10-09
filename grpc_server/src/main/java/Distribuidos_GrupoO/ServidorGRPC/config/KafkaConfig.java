@@ -1,7 +1,9 @@
 package Distribuidos_GrupoO.ServidorGRPC.config;
 
-import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationOffer;
-import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationRequest;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.offer.DonationOffer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.request.DonationRequest;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.cancellation.DonationCancellation;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer.DonationTransfer;
 import org.springframework.kafka.core.ProducerFactory;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -72,20 +74,38 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer> donationTransferConsumerFactory() {
+    public ConsumerFactory<String, DonationTransfer> donationTransferConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "transferencias-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer.class, false));
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(DonationTransfer.class, false));
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer> donationTransferKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, DonationTransfer> donationTransferKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, DonationTransfer> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(donationTransferConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, DonationCancellation> donationCancellationConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "baja-solicitudes-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(DonationCancellation.class, false));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, DonationCancellation> donationCancellationKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, DonationCancellation> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(donationCancellationConsumerFactory());
         return factory;
     }
 }

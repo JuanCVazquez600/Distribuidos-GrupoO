@@ -1,4 +1,4 @@
-package Distribuidos_GrupoO.ServidorGRPC.service.kafka;
+package Distribuidos_GrupoO.ServidorGRPC.service.kafka.request;
 
 import java.util.List;
 

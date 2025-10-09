@@ -1,4 +1,4 @@
-package Distribuidos_GrupoO.ServidorGRPC.service.kafka;
+package Distribuidos_GrupoO.ServidorGRPC.service.kafka.offer;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;

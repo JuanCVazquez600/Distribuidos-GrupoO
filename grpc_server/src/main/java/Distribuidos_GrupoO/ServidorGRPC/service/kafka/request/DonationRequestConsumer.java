@@ -1,4 +1,4 @@
-package Distribuidos_GrupoO.ServidorGRPC.service.kafka;
+package Distribuidos_GrupoO.ServidorGRPC.service.kafka.request;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -16,5 +16,11 @@ public class DonationRequestConsumer {
 
     public List<DonationRequest> getRequests() {
         return new ArrayList<>(requests);
+    }
+
+    public void removeRequest(String organizationId, String requestId) {
+        requests.removeIf(request -> 
+            request.getOrganizationId().equals(organizationId) && 
+            request.getRequestId().equals(requestId));
     }
 }

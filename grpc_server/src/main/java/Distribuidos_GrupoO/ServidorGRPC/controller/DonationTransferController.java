@@ -1,8 +1,8 @@
 package Distribuidos_GrupoO.ServidorGRPC.controller;
 
 import Distribuidos_GrupoO.ServidorGRPC.service.IInventarioDeDonacionesService;
-import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransfer;
-import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationTransferProducer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer.DonationTransfer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer.DonationTransferProducer;
 import Distribuidos_GrupoO.ServidorGRPC.model.InventarioDeDonaciones;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

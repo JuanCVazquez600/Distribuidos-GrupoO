@@ -2,7 +2,7 @@ package Distribuidos_GrupoO.ServidorGRPC.util;
 
 import Distribuidos_GrupoO.ServidorGRPC.model.InventarioDeDonaciones;
 import Distribuidos_GrupoO.ServidorGRPC.model.Usuario;
-import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationOffer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.offer.DonationOffer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
