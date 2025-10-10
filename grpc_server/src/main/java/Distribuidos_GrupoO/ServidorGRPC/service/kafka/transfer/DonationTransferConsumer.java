@@ -15,9 +15,17 @@ public class DonationTransferConsumer {
     @Autowired
     private IInventarioDeDonacionesService inventarioService;
 
-    @KafkaListener(topics = "transferencia-donaciones/${spring.organization.id}", groupId = "transferencias-group", containerFactory = "donationTransferKafkaListenerContainerFactory")
+    @KafkaListener(topics = "transferencia-donaciones", groupId = "transferencias-group", containerFactory = "donationTransferKafkaListenerContainerFactory")
     public void listen(DonationTransfer transfer) {
         try {
+            // Verificar si la transferencia es para nuestra organización
+            if (transfer.getRecipientOrganizationId() == null || !organizationId.equals(transfer.getRecipientOrganizationId())) {
+                // Si no es para nosotros, ignoramos el mensaje
+                System.out.println("Transferencia ignorada - no es para nuestra organización. Destinatario: " + transfer.getRecipientOrganizationId());
+                return;
+            }
+            
+            System.out.println("Procesando transferencia para nuestra organización: " + organizationId);
             for (DonationTransfer.DonationItem item : transfer.getDonations()) {
                 InventarioDeDonaciones.CategoriaEnum categoria;
                 try {

@@ -22,6 +22,9 @@ public class DonationTransferController {
         @PathVariable String recipientOrgId,
         @RequestBody DonationTransfer transfer) {
         try {
+            // Establecer la organización destinataria
+            transfer.setRecipientOrganizationId(recipientOrgId);
+            
             // Descontar del inventario local la cantidad donada
             for (DonationTransfer.DonationItem item : transfer.getDonations()) {
                 InventarioDeDonaciones.CategoriaEnum categoria;

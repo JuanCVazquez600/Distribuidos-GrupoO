@@ -5,8 +5,11 @@ import Distribuidos_GrupoO.ServidorGRPC.model.Usuario;
 import Distribuidos_GrupoO.ServidorGRPC.repository.EventoSolidarioRepository;
 import Distribuidos_GrupoO.ServidorGRPC.repository.UsuarioRepository;
 import Distribuidos_GrupoO.ServidorGRPC.service.IEventoSolidarioService;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.eventcancellation.EventCancellation;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.eventcancellation.EventCancellationProducer;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -16,11 +19,17 @@ import java.util.Optional;
 @Service
 public class EventoSolidarioServiceImplementation implements IEventoSolidarioService {
 
+    @Value("${app.organization.id:org-123}")
+    private String organizationId;
+
     @Autowired
     private EventoSolidarioRepository eventoRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private EventCancellationProducer eventCancellationProducer;
 
     @Override
     public EventoSolidario crearEvento(EventoSolidario evento) {
@@ -54,7 +63,19 @@ public class EventoSolidarioServiceImplementation implements IEventoSolidarioSer
         if (evento.getFechaEvento().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("No se pueden eliminar eventos pasados");
         }
+
+        // Eliminar el evento de la base de datos
         eventoRepository.delete(evento);
+
+        // Enviar mensaje de baja al topic de Kafka
+        try {
+            EventCancellation eventCancellation = new EventCancellation(organizationId, String.valueOf(id));
+            eventCancellationProducer.sendEventCancellation(eventCancellation);
+            System.out.println("Mensaje de baja de evento enviado: " + eventCancellation);
+        } catch (Exception e) {
+            System.err.println("Error al enviar mensaje de baja de evento: " + e.getMessage());
+            // No relanzamos la excepción para no afectar la eliminación del evento
+        }
     }
 
     @Override
