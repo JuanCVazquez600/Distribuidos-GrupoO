@@ -36,4 +36,18 @@ public class SolidaryEventController {
         List<SolidaryEvent> allExternalEvents = eventConsumer.getAllExternalEvents();
         return ResponseEntity.ok(allExternalEvents);
     }
+
+ //prueba del punto 6
+/*
+    @PostMapping("/baja")
+   public ResponseEntity<String> getDeletedEvents(@RequestBody SolidaryEvent event) {
+        // BajaEventosRequest puede contener organizationId, from, to, page, size
+        eventProducer.deleteEvent(event);
+        return ResponseEntity.ok("Eventos que se eliminaron");
+    }
+
+*/
+
+
+
 }
