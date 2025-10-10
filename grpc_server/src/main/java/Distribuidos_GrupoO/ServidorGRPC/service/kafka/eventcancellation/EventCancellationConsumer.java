@@ -27,7 +27,7 @@ public class EventCancellationConsumer {
             
             // Verificar si el evento corresponde a nuestra organización
             if (organizationId.equals(eventCancellation.getOrganizationId())) {
-                System.out.println("Evento de baja propio ignorado: " + eventCancellation.getEventId());
+                System.out.println("Evento de baja propio ignorado: " + eventCancellation.getEventId()); //SI COMENTAMOS DE LA LINEA 30 A 40 SE ELIMINA DE LA BD
                 return;
             }
 
@@ -47,7 +47,7 @@ public class EventCancellationConsumer {
             
             System.out.println("Procesando baja de evento externo: " + 
                              "Organización: " + organizationId + 
-                             ", Evento: " + eventId);
+                             ", Evento: " + eventId); //DE LA LINEA 50 A 70 SI COMENTAMOS SE ELIMINA DE LA BD EL EVENTO  
             
             // 1. ACTUALIZACIÓN: Verificar si el evento existe en nuestra base de datos
             boolean eventoExisteEnNuestraBD = false;

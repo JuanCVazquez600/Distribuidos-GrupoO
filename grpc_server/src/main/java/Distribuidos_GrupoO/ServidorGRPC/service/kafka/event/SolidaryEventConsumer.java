@@ -77,4 +77,19 @@ public class SolidaryEventConsumer {
             return new ArrayList<>(externalEvents);
         }
     }
+
+    /**
+     * Obtiene el organizador de un evento específico
+     * @param eventId ID del evento
+     * @return ID de la organización organizadora, o null si no se encuentra
+     */
+    public String getEventOrganizer(String eventId) {
+        synchronized (externalEvents) {
+            return externalEvents.stream()
+                    .filter(event -> eventId.equals(event.getEventId()))
+                    .map(SolidaryEvent::getOrganizationId)
+                    .findFirst()
+                    .orElse(null);
+        }
+    }
 }
