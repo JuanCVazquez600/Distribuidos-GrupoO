@@ -73,14 +73,6 @@ public class EventAdhesionController {
     }
 
     /**
-     * Endpoint de prueba simple
-     */
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Endpoint funcionando correctamente");
-    }
-
-    /**
      * Endpoint simplificado para testing con Postman
      * POST /adhesions/join-direct
      */
