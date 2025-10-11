@@ -1,12 +1,16 @@
 package Distribuidos_GrupoO.ServidorGRPC.service.kafka.eventcancellation;
 
 import Distribuidos_GrupoO.ServidorGRPC.model.EventoSolidario;
+import Distribuidos_GrupoO.ServidorGRPC.model.EventoBaja;
+import Distribuidos_GrupoO.ServidorGRPC.repository.EventoBajaRepository;
 import Distribuidos_GrupoO.ServidorGRPC.service.implementation.EventoSolidarioServiceImplementation;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.event.SolidaryEventConsumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class EventCancellationConsumer {
@@ -19,6 +23,9 @@ public class EventCancellationConsumer {
 
     @Autowired
     private SolidaryEventConsumer solidaryEventConsumer;
+
+    @Autowired
+    private EventoBajaRepository eventoBajaRepository;
 
     @KafkaListener(topics = "baja-evento-solidario", groupId = "baja-eventos-group", containerFactory = "eventCancellationKafkaListenerContainerFactory")
     public void listen(EventCancellation eventCancellation) {
@@ -47,42 +54,65 @@ public class EventCancellationConsumer {
             
             System.out.println("Procesando baja de evento externo: " + 
                              "Organización: " + organizationId + 
-                             ", Evento: " + eventId); //DE LA LINEA 50 A 70 SI COMENTAMOS SE ELIMINA DE LA BD EL EVENTO  
+                             ", Evento: " + eventId);
             
             // 1. ACTUALIZACIÓN: Verificar si el evento existe en nuestra base de datos
             boolean eventoExisteEnNuestraBD = false;
+            String observaciones = "";
+            EventoBaja.EstadoBaja estado = EventoBaja.EstadoBaja.PROCESADO;
+            
             try {
                 Integer eventIdInt = Integer.parseInt(eventId);
                 EventoSolidario evento = eventoService.buscarPorId(eventIdInt);
                 eventoExisteEnNuestraBD = true;
+                observaciones = "Evento encontrado en BD local: " + evento.getNombreEvento();
                 
                 System.out.println("⚠️  IMPORTANTE: Evento externo encontrado en nuestra BD: " + evento.getNombreEvento());
                 System.out.println("⚠️  Este evento debe ser revisado ya que otra organización lo dio de baja");
                 
-                // ACTUALIZACIÓN: Marcar el evento como "bajo revisión" o eliminarlo según reglas de negocio
-                // Opción 1: Eliminar también de nuestro sistema (sincronización total)
-                // eventoService.eliminarEvento(eventIdInt);
-                // System.out.println("✅ Evento eliminado de nuestro sistema por sincronización");
-                
-                // Opción 2: Solo registrar para revisión manual
-                System.out.println("📋 Evento marcado para revisión manual");
+                // ACTUALIZACIÓN: Eliminar también de nuestro sistema (sincronización automática)
+                eventoService.eliminarEvento(eventIdInt);
+                System.out.println("✅ Evento eliminado de nuestro sistema por sincronización automática");
+                observaciones = "Evento encontrado y ELIMINADO de BD local: " + evento.getNombreEvento();
                 
             } catch (RuntimeException e) {
                 if (e.getMessage().contains("Evento no encontrado")) {
+                    eventoExisteEnNuestraBD = false;
+                    observaciones = "Evento no encontrado en BD local (comportamiento normal)";
                     System.out.println("✅ Evento externo no encontrado en nuestra BD (comportamiento normal)");
                 } else {
+                    eventoExisteEnNuestraBD = false;
+                    observaciones = "Error al verificar evento: " + e.getMessage();
+                    estado = EventoBaja.EstadoBaja.ERROR;
                     System.err.println("Error al verificar evento en BD: " + e.getMessage());
                 }
             }
+
+            // 2. PERSISTIR EN BASE DE DATOS
+            try {
+                EventoBaja eventoBaja = new EventoBaja(
+                    organizationId,
+                    eventId,
+                    eventoExisteEnNuestraBD,
+                    estado,
+                    observaciones
+                );
+                
+                EventoBaja bajaGuardada = eventoBajaRepository.save(eventoBaja);
+                System.out.println("💾 Baja de evento persistida en BD con ID: " + bajaGuardada.getId());
+                
+            } catch (Exception e) {
+                System.err.println("❌ Error al persistir baja de evento en BD: " + e.getMessage());
+                // Continúa con el procesamiento aunque falle la persistencia
+            }
             
-            // 2. ACTUALIZACIÓN: Remover de la lista de eventos externos disponibles
-            // (Si mantenemos un cache de eventos de otras organizaciones)
+            // 3. ACTUALIZACIÓN: Remover de la lista de eventos externos disponibles
             removeEventFromExternalCache(organizationId, eventId);
             
-            // 3. ACTUALIZACIÓN: Registrar en log de auditoria/historial
+            // 4. ACTUALIZACIÓN: Registrar en log de auditoria/historial
             logEventCancellation(organizationId, eventId, eventoExisteEnNuestraBD);
             
-            // 4. ACTUALIZACIÓN: Notificar a componentes del sistema
+            // 5. ACTUALIZACIÓN: Notificar a componentes del sistema
             notifySystemComponents(organizationId, eventId);
             
             System.out.println("✅ Actualizaciones del sistema completadas para evento: " + eventId);

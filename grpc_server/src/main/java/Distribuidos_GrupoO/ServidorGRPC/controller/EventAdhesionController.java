@@ -3,6 +3,8 @@ package Distribuidos_GrupoO.ServidorGRPC.controller;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.adhesion.EventAdhesion;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.adhesion.EventAdhesionProducer;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.event.SolidaryEventConsumer;
+import Distribuidos_GrupoO.ServidorGRPC.model.EventoBaja;
+import Distribuidos_GrupoO.ServidorGRPC.repository.EventoBajaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;

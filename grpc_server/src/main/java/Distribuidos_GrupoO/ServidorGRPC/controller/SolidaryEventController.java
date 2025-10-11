@@ -5,6 +5,8 @@ import Distribuidos_GrupoO.ServidorGRPC.service.kafka.event.SolidaryEventConsume
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.event.SolidaryEventProducer;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.eventcancellation.EventCancellation;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.eventcancellation.EventCancellationProducer;
+import Distribuidos_GrupoO.ServidorGRPC.model.EventoBaja;
+import Distribuidos_GrupoO.ServidorGRPC.repository.EventoBajaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,9 @@ public class SolidaryEventController {
 
     @Autowired
     private EventCancellationProducer eventCancellationProducer;
+
+    @Autowired
+    private EventoBajaRepository eventoBajaRepository;
 
     @PostMapping("/publish")
     public ResponseEntity<String> publishEvent(@RequestBody SolidaryEvent event) {
@@ -65,6 +70,17 @@ public class SolidaryEventController {
      }
  }
 
-
+ /**
+  * Endpoint para consultar bajas de eventos persistidas
+  */
+ @GetMapping("/bajas")
+ public ResponseEntity<List<EventoBaja>> getBajasEventos() {
+     try {
+         List<EventoBaja> bajas = eventoBajaRepository.findAll();
+         return ResponseEntity.ok(bajas);
+     } catch (Exception e) {
+         return ResponseEntity.internalServerError().build();
+     }
+ }
 
 }
