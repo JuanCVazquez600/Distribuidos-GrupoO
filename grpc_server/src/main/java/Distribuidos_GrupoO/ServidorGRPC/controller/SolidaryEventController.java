@@ -6,7 +6,10 @@ import Distribuidos_GrupoO.ServidorGRPC.service.kafka.event.SolidaryEventProduce
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.eventcancellation.EventCancellation;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.eventcancellation.EventCancellationProducer;
 import Distribuidos_GrupoO.ServidorGRPC.model.EventoBaja;
+import Distribuidos_GrupoO.ServidorGRPC.model.EventoSolidario;
 import Distribuidos_GrupoO.ServidorGRPC.repository.EventoBajaRepository;
+import Distribuidos_GrupoO.ServidorGRPC.repository.EventoSolidarioRepository;
+import Distribuidos_GrupoO.ServidorGRPC.util.SolidaryEventMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/events")
@@ -31,22 +35,68 @@ public class SolidaryEventController {
     @Autowired
     private EventoBajaRepository eventoBajaRepository;
 
+    @Autowired
+    private EventoSolidarioRepository eventoSolidarioRepository;
+
     @PostMapping("/publish")
     public ResponseEntity<String> publishEvent(@RequestBody SolidaryEvent event) {
-        eventProducer.publishEvent(event);
-        return ResponseEntity.ok("Evento solidario publicado correctamente");
+        try {
+            // 1. Publicar en Kafka para otras organizaciones
+            eventProducer.publishEvent(event);
+            
+            // 2. Guardar en BD local para que miembros de otras org puedan unirse
+            EventoSolidario eventoLocal = SolidaryEventMapper.toEntity(event);
+            eventoSolidarioRepository.save(eventoLocal);
+            
+            return ResponseEntity.ok("Evento solidario publicado y guardado correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body("Error al publicar evento: " + e.getMessage());
+        }
     }
 
     @GetMapping("/external")
     public ResponseEntity<List<SolidaryEvent>> getExternalEvents() {
-        List<SolidaryEvent> externalEvents = eventConsumer.getExternalEvents();
-        return ResponseEntity.ok(externalEvents);
+        // Combinar eventos de memoria y BD
+        List<SolidaryEvent> memoryEvents = eventConsumer.getExternalEvents();
+        List<SolidaryEvent> dbEvents = eventConsumer.getPersistedExternalEventsAsSolidaryEvents();
+        
+        // Unir ambas listas sin duplicados
+        List<SolidaryEvent> allExternalEvents = new ArrayList<>(memoryEvents);
+        for (SolidaryEvent dbEvent : dbEvents) {
+            if (allExternalEvents.stream().noneMatch(e -> 
+                e.getEventId().equals(dbEvent.getEventId()) && 
+                e.getOrganizationId().equals(dbEvent.getOrganizationId()))) {
+                allExternalEvents.add(dbEvent);
+            }
+        }
+        
+        return ResponseEntity.ok(allExternalEvents);
     }
 
     @GetMapping("/external/all")
     public ResponseEntity<List<SolidaryEvent>> getAllExternalEvents() {
         List<SolidaryEvent> allExternalEvents = eventConsumer.getAllExternalEvents();
         return ResponseEntity.ok(allExternalEvents);
+    }
+
+    @GetMapping("/my-events")
+    public ResponseEntity<List<EventoSolidario>> getMyEvents() {
+        // Eventos que publiqué desde mi organización (disponibles para que otros se unan)
+        List<EventoSolidario> myEvents = eventoSolidarioRepository.findAll();
+        return ResponseEntity.ok(myEvents);
+    }
+
+    @PostMapping("/force-save-external")
+    public ResponseEntity<String> forceSaveExternalEvent(@RequestBody SolidaryEvent event) {
+        try {
+            // Forzar guardado de evento externo (para testing/recuperación)
+            EventoSolidario eventoEntity = SolidaryEventMapper.toEntity(event);
+            eventoSolidarioRepository.save(eventoEntity);
+            return ResponseEntity.ok("Evento externo guardado forzosamente en BD");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 
 

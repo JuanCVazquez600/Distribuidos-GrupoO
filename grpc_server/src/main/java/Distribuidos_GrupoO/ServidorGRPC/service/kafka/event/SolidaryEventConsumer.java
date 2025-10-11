@@ -1,5 +1,9 @@
 package Distribuidos_GrupoO.ServidorGRPC.service.kafka.event;
 
+import Distribuidos_GrupoO.ServidorGRPC.model.EventoSolidario;
+import Distribuidos_GrupoO.ServidorGRPC.repository.EventoSolidarioRepository;
+import Distribuidos_GrupoO.ServidorGRPC.util.SolidaryEventMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -15,7 +19,10 @@ public class SolidaryEventConsumer {
     @Value("${app.organization.id:org-local}")
     private String ourOrganizationId;
     
-    // Lista de eventos externos (de otras organizaciones)
+    @Autowired
+    private EventoSolidarioRepository eventoSolidarioRepository;
+    
+    // Lista de eventos externos (de otras organizaciones) - en memoria para consulta rápida
     private final List<SolidaryEvent> externalEvents = new ArrayList<>();
 
     @KafkaListener(topics = "eventos-solidarios", groupId = "eventos-group", containerFactory = "solidaryEventKafkaListenerContainerFactory")
@@ -24,32 +31,69 @@ public class SolidaryEventConsumer {
     }
 
     private void processEvent(SolidaryEvent event) {
-        // 1. Descartar eventos propios
-        if (isOwnEvent(event)) {
-            System.out.println("Evento propio descartado: " + event.getEventId());
-            return;
-        }
+        try {
+            // 1. Descartar eventos propios
+            if (isOwnEvent(event)) {
+                System.out.println("Evento propio descartado: " + event.getEventId());
+                return;
+            }
 
-        // 2. Verificar que el evento esté vigente (fecha futura)
-        if (!isEventValid(event)) {
-            System.out.println("Evento no vigente descartado: " + event.getEventId() + 
-                             " - Fecha: " + event.getDateTime());
-            return;
-        }
+            // 2. Verificar que el evento esté vigente (fecha futura)
+            if (!isEventValid(event)) {
+                System.out.println("Evento no vigente descartado: " + event.getEventId() + 
+                                 " - Fecha: " + event.getDateTime());
+                return;
+            }
 
-        // 3. Guardar evento externo válido
-        synchronized (externalEvents) {
-            // Evitar duplicados
-            if (externalEvents.stream().noneMatch(e -> 
-                e.getOrganizationId().equals(event.getOrganizationId()) && 
-                e.getEventId().equals(event.getEventId()))) {
-                
-                externalEvents.add(event);
-                System.out.println("Evento externo agregado: " + 
+            // 3. Validar usando el mapper
+            if (!SolidaryEventMapper.isValidForPersistence(event)) {
+                System.out.println("Evento no válido según mapper: " + event.getEventId());
+                return;
+            }
+
+            // 4. Verificar que no sea un evento que debe descartarse
+            if (SolidaryEventMapper.shouldDiscard(event, ourOrganizationId)) {
+                System.out.println("Evento descartado por organización: " + event.getEventId());
+                return;
+            }
+
+            // 5. Guardar evento en base de datos usando el mapper
+            EventoSolidario eventoEntity = SolidaryEventMapper.toEntity(event);
+            
+            // Verificar si ya existe en la BD para evitar duplicados (buscar por nombre y fecha)
+            List<EventoSolidario> existingEvents = eventoSolidarioRepository.findAll().stream()
+                    .filter(e -> e.getNombreEvento().equals(eventoEntity.getNombreEvento()) &&
+                               e.getFechaEvento().equals(eventoEntity.getFechaEvento()))
+                    .toList();
+            
+            if (existingEvents.isEmpty()) {
+                eventoSolidarioRepository.save(eventoEntity);
+                System.out.println("Evento externo persistido en BD: " + 
                                  "Organización: " + event.getOrganizationId() + 
                                  ", Evento: " + event.getEventName() + 
                                  ", Fecha: " + event.getDateTime());
+            } else {
+                System.out.println("Evento ya existe en BD: " + event.getEventName());
             }
+
+            // 6. También mantener en memoria para consulta rápida
+            synchronized (externalEvents) {
+                // Evitar duplicados en memoria
+                if (externalEvents.stream().noneMatch(e -> 
+                    e.getOrganizationId().equals(event.getOrganizationId()) && 
+                    e.getEventId().equals(event.getEventId()))) {
+                    
+                    externalEvents.add(event);
+                    System.out.println("Evento externo agregado a memoria: " + 
+                                     "Organización: " + event.getOrganizationId() + 
+                                     ", Evento: " + event.getEventName() + 
+                                     ", Fecha: " + event.getDateTime());
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error procesando evento: " + event.getEventId() + " - " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -91,5 +135,24 @@ public class SolidaryEventConsumer {
                     .findFirst()
                     .orElse(null);
         }
+    }
+
+    /**
+     * Obtiene eventos externos persistidos desde la base de datos
+     * Útil para obtener eventos que han sido guardados a través de Kafka
+     * @return Lista de eventos solidarios vigentes desde BD
+     */
+    public List<EventoSolidario> getPersistedExternalEvents() {
+        // Filtrar solo eventos futuros
+        return eventoSolidarioRepository.findByFechaEventoAfter(LocalDateTime.now());
+    }
+
+    /**
+     * Convierte eventos persistidos a SolidaryEvents para compatibilidad
+     * @return Lista de eventos externos como SolidaryEvent desde BD
+     */
+    public List<SolidaryEvent> getPersistedExternalEventsAsSolidaryEvents() {
+        List<EventoSolidario> eventosFromDB = getPersistedExternalEvents();
+        return SolidaryEventMapper.fromEntityList(eventosFromDB, "external");
     }
 }
