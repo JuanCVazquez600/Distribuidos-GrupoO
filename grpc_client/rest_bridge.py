@@ -1,10 +1,13 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import grpc
+import requests
 from proto import usuarios_pb2, usuarios_pb2_grpc, eventos_pb2, eventos_pb2_grpc, inventario_pb2, inventario_pb2_grpc
 
 app = Flask(__name__)
 CORS(app)
+
+SPRING_BOOT_URL = 'http://localhost:8080'
 
 def grpc_login(usuario_email, clave):
     channel = grpc.insecure_channel('localhost:9090')
@@ -312,6 +315,226 @@ def quitar_miembro(evento_id, miembro_id):
         return jsonify({'exito': response.exito, 'mensaje': response.mensaje})
     except grpc.RpcError as e:
         return jsonify({'exito': False, 'mensaje': str(e)})
+
+# Proxy endpoints to Spring Boot/Kafka server
+@app.route('/requests/publish', methods=['POST'])
+def publish_request():
+    try:
+        response = requests.post(f'{SPRING_BOOT_URL}/requests/publish', json=request.json)
+        try:
+            response_data = response.json()
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Solicitud publicada correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al publicar solicitud', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error publishing request: {e}")
+        return jsonify({'error': 'Error al publicar solicitud', 'details': str(e)}), 500
+
+@app.route('/offers/publish', methods=['POST'])
+def publish_offer():
+    try:
+        print(f"Publishing offer: {request.json}")
+        response = requests.post(f'{SPRING_BOOT_URL}/offers/publish', json=request.json)
+        print(f"Spring Boot response status: {response.status_code}")
+        print(f"Spring Boot response content: {response.text}")
+        try:
+            response_data = response.json()
+            print(f"Parsed JSON response: {response_data}")
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            print(f"Non-JSON response: {response.text}")
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Oferta publicada correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al publicar oferta', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error publishing offer: {e}")
+        return jsonify({'error': 'Error al publicar oferta', 'details': str(e)}), 500
+
+@app.route('/events/publish', methods=['POST'])
+def publish_event():
+    try:
+        print(f"Publishing event: {request.json}")
+        response = requests.post(f'{SPRING_BOOT_URL}/events/publish', json=request.json)
+        print(f"Spring Boot response status: {response.status_code}")
+        print(f"Spring Boot response content: {response.text}")
+        try:
+            response_data = response.json()
+            print(f"Parsed JSON response: {response_data}")
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            print(f"Non-JSON response: {response.text}")
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Evento publicado correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al publicar evento', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error publishing event: {e}")
+
+@app.route('/transfers/send/<recipient_org>', methods=['POST'])
+def send_transfer(recipient_org):
+    try:
+        response = requests.post(f'{SPRING_BOOT_URL}/transfers/send/{recipient_org}', json=request.json)
+        try:
+            response_data = response.json()
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Transferencia enviada correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al enviar transferencia', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error sending transfer: {e}")
+        return jsonify({'error': 'Error al enviar transferencia', 'details': str(e)}), 500
+
+@app.route('/requests/list', methods=['GET'])
+def list_requests():
+    try:
+        response = requests.get(f'{SPRING_BOOT_URL}/requests/list')
+        try:
+            response_data = response.json()
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Solicitudes obtenidas correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al obtener solicitudes', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error listing requests: {e}")
+        return jsonify({'error': 'Error al obtener solicitudes', 'details': str(e)}), 500
+
+@app.route('/offers/list', methods=['GET'])
+def list_offers():
+    try:
+        response = requests.get(f'{SPRING_BOOT_URL}/offers/list')
+        try:
+            response_data = response.json()
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Ofertas obtenidas correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al obtener ofertas', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error listing offers: {e}")
+        return jsonify({'error': 'Error al obtener ofertas', 'details': str(e)}), 500
+
+@app.route('/transfers/list', methods=['GET'])
+def list_transfers():
+    try:
+        response = requests.get(f'{SPRING_BOOT_URL}/transfers/list')
+        try:
+            response_data = response.json()
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Transferencias obtenidas correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al obtener transferencias', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error listing transfers: {e}")
+        return jsonify({'error': 'Error al obtener transferencias', 'details': str(e)}), 500
+
+@app.route('/events/external', methods=['GET'])
+def list_external_events():
+    try:
+        print("Fetching external events...")
+        response = requests.get(f'{SPRING_BOOT_URL}/events/external')
+        print(f"Spring Boot response status: {response.status_code}")
+        print(f"Spring Boot response content: {response.text}")
+        try:
+            response_data = response.json()
+            print(f"Parsed JSON response: {response_data}")
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            print(f"Non-JSON response: {response.text}")
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Eventos externos obtenidos correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al obtener eventos externos', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error listing external events: {e}")
+        return jsonify({'error': 'Error al obtener eventos externos', 'details': str(e)}), 500
+
+@app.route('/adhesions/join/<event_id>', methods=['POST'])
+def join_event(event_id):
+    try:
+        print(f"Joining event {event_id}: {request.json}")
+        response = requests.post(f'{SPRING_BOOT_URL}/adhesions/join/{event_id}', json=request.json)
+        print(f"Spring Boot response status: {response.status_code}")
+        print(f"Spring Boot response content: {response.text}")
+        try:
+            response_data = response.json()
+            print(f"Parsed JSON response: {response_data}")
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            print(f"Non-JSON response: {response.text}")
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Adherido al evento correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al adherirse al evento', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error joining event {event_id}: {e}")
+        return jsonify({'error': 'Error al adherirse al evento', 'details': str(e)}), 500
+
+@app.route('/events/external/<event_id>', methods=['DELETE'])
+def delete_external_event(event_id):
+    try:
+        user_id = request.args.get('userId')
+        if not user_id:
+            return jsonify({'error': 'userId es requerido'}), 400
+        print(f"Deleting external event {event_id} for user {user_id}")
+        response = requests.delete(f'{SPRING_BOOT_URL}/events/external/{event_id}?userId={user_id}')
+        print(f"Spring Boot response status: {response.status_code}")
+        print(f"Spring Boot response content: {response.text}")
+        try:
+            response_data = response.json()
+            print(f"Parsed JSON response: {response_data}")
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            print(f"Non-JSON response: {response.text}")
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Evento externo eliminado correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al eliminar evento externo', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error deleting external event {event_id}: {e}")
+        return jsonify({'error': 'Error al eliminar evento externo', 'details': str(e)}), 500
+
+@app.route('/events/baja', methods=['POST'])
+def baja_event():
+    try:
+        print(f"Dando de baja evento: {request.json}")
+        response = requests.post(f'{SPRING_BOOT_URL}/events/baja', json=request.json)
+        print(f"Spring Boot response status: {response.status_code}")
+        print(f"Spring Boot response content: {response.text}")
+        try:
+            response_data = response.json()
+            print(f"Parsed JSON response: {response_data}")
+        except ValueError:
+            # If response is not valid JSON, return a generic success/error based on status
+            print(f"Non-JSON response: {response.text}")
+            if response.status_code >= 200 and response.status_code < 300:
+                return jsonify({'message': 'Evento dado de baja correctamente'}), response.status_code
+            else:
+                return jsonify({'error': 'Error al dar de baja evento', 'details': f'HTTP {response.status_code}'}), response.status_code
+        return jsonify(response_data), response.status_code
+    except requests.RequestException as e:
+        print(f"Error dando de baja evento: {e}")
+        return jsonify({'error': 'Error al dar de baja evento', 'details': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

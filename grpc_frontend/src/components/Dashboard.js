@@ -3,11 +3,20 @@ import axios from 'axios';
 import UserForm from './UserForm';
 import EventForm from './EventForm';
 import InventoryForm from './InventoryForm';
+import DonationRequestForm from './DonationRequestForm';
+import DonationOfferForm from './DonationOfferForm';
+import ExternalEventForm from './ExternalEventForm';
+import ExternalEventsList from './ExternalEventsList';
+import TransferForm from './TransferForm';
 
 const Dashboard = ({ currentUser, onLogout }) => {
   const [usuarios, setUsuarios] = useState([]);
   const [eventos, setEventos] = useState([]);
   const [donaciones, setDonaciones] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [ofertas, setOfertas] = useState([]);
+  const [transferencias, setTransferencias] = useState([]);
+  const [eventosExternos, setEventosExternos] = useState([]);
   const [activeTab, setActiveTab] = useState(() => {
     if (currentUser && currentUser.rol) {
       const userRole = currentUser.rol.toUpperCase();
@@ -38,7 +47,11 @@ const Dashboard = ({ currentUser, onLogout }) => {
       await Promise.all([
         fetchUsuarios(),
         fetchEventos(),
-        fetchDonaciones()
+        fetchDonaciones(),
+        fetchSolicitudes(),
+        fetchOfertas(),
+        fetchTransferencias(),
+        fetchEventosExternos()
       ]);
     } finally {
       setLoading(false);
@@ -72,6 +85,42 @@ const Dashboard = ({ currentUser, onLogout }) => {
     }
   };
 
+  const fetchSolicitudes = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/requests/list');
+      setSolicitudes(response.data);
+    } catch (error) {
+      console.error('Error fetching solicitudes:', error);
+    }
+  };
+
+  const fetchOfertas = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/offers/list');
+      setOfertas(response.data);
+    } catch (error) {
+      console.error('Error fetching ofertas:', error);
+    }
+  };
+
+  const fetchTransferencias = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/transfers/list');
+      setTransferencias(response.data);
+    } catch (error) {
+      console.error('Error fetching transferencias:', error);
+    }
+  };
+
+  const fetchEventosExternos = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/events/external');
+      setEventosExternos(response.data);
+    } catch (error) {
+      console.error('Error fetching eventos externos:', error);
+    }
+  };
+
   // Funciones de verificación de permisos
   const hasPermission = (permission) => {
     if (!currentUser || !currentUser.rol) return false;
@@ -89,6 +138,14 @@ const Dashboard = ({ currentUser, onLogout }) => {
         return userRole === 'PRESIDENTE' || userRole === 'VOCAL' || userRole === 'COORDINADOR' || userRole === 'VOLUNTARIO';
       case 'join_events':
         return userRole === 'VOLUNTARIO';
+      case 'manage_requests':
+        return userRole === 'PRESIDENTE' || userRole === 'VOCAL';
+      case 'manage_offers':
+        return userRole === 'PRESIDENTE' || userRole === 'VOCAL';
+      case 'manage_transfers':
+        return userRole === 'PRESIDENTE' || userRole === 'COORDINADOR';
+      case 'manage_external_events':
+        return userRole === 'PRESIDENTE' || userRole === 'COORDINADOR' || userRole === 'VOLUNTARIO';
       case 'view_all':
         return true; // Todos pueden ver
       default:
@@ -368,6 +425,38 @@ const Dashboard = ({ currentUser, onLogout }) => {
               📦 Donaciones ({donaciones.length})
             </button>
           )}
+          {hasPermission('manage_requests') && (
+            <button
+              className={`tab-button ${activeTab === 'solicitudes' ? 'active' : ''}`}
+              onClick={() => setActiveTab('solicitudes')}
+            >
+              📋 Solicitudes ({solicitudes.length})
+            </button>
+          )}
+          {hasPermission('manage_offers') && (
+            <button
+              className={`tab-button ${activeTab === 'ofertas' ? 'active' : ''}`}
+              onClick={() => setActiveTab('ofertas')}
+            >
+              🎁 Ofertas ({ofertas.length})
+            </button>
+          )}
+          {hasPermission('manage_transfers') && (
+            <button
+              className={`tab-button ${activeTab === 'transferencias' ? 'active' : ''}`}
+              onClick={() => setActiveTab('transferencias')}
+            >
+              🔄 Transferencias ({transferencias.length})
+            </button>
+          )}
+          {hasPermission('manage_external_events') && (
+            <button
+              className={`tab-button ${activeTab === 'eventos-externos' ? 'active' : ''}`}
+              onClick={() => setActiveTab('eventos-externos')}
+            >
+              🌍 Eventos Externos ({eventosExternos.length})
+            </button>
+          )}
         </div>
 
         <div>
@@ -492,62 +581,60 @@ const Dashboard = ({ currentUser, onLogout }) => {
                           </div>
                         </td>
                         <td>
-                          <div>
                             <div>{new Date(e.fechaHora).toLocaleDateString()}</div>
                             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                               {new Date(e.fechaHora).toLocaleTimeString()}
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          {e.miembros && e.miembros.length > 0 ? (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)' }}>
-                              {e.miembros.slice(0, 3).map(m => (
-                                <span key={m.id} className="category-tag" style={{ fontSize: '0.7rem' }}>
-                                  {m.nombre}
-                                </span>
-                              ))}
-                              {e.miembros.length > 3 && (
-                                <span className="category-tag" style={{ fontSize: '0.7rem' }}>
-                                  +{e.miembros.length - 3}
-                                </span>
+                          </td>
+                          <td>
+                            {e.miembros && e.miembros.length > 0 ? (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)' }}>
+                                {e.miembros.slice(0, 3).map(m => (
+                                  <span key={m.id} className="category-tag" style={{ fontSize: '0.7rem' }}>
+                                    {m.nombre}
+                                  </span>
+                                ))}
+                                {e.miembros.length > 3 && (
+                                  <span className="category-tag" style={{ fontSize: '0.7rem' }}>
+                                    +{e.miembros.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                Sin miembros
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <div className="action-buttons">
+                              {hasPermission('manage_events') && (
+                                <>
+                                  <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(e, 'event')}>
+                                    ✏️ Editar
+                                  </button>
+                                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(e.id, 'event')}>
+                                    🗑️ Eliminar
+                                  </button>
+                                </>
+                              )}
+                              {hasPermission('join_events') && (
+                                <button className="btn btn-primary btn-sm" onClick={() => handleJoinLeaveEvent(e)}>
+                                  {e.miembros && e.miembros.some(m => m.id === currentUser.id) ? '🚪 Abandonar' : '➕ Unirse'}
+                                </button>
+                              )}
+                              {hasPermission('manage_events') && (
+                                <button className="btn btn-secondary btn-sm" onClick={() => handleManageMembers(e)}>
+                                  👥 Gestionar Miembros
+                                </button>
                               )}
                             </div>
-                          ) : (
-                            <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                              Sin miembros
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            {hasPermission('manage_events') && (
-                              <>
-                                <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(e, 'event')}>
-                                  ✏️ Editar
-                                </button>
-                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(e.id, 'event')}>
-                                  🗑️ Eliminar
-                                </button>
-                              </>
-                            )}
-                            {hasPermission('join_events') && (
-                              <button className="btn btn-primary btn-sm" onClick={() => handleJoinLeaveEvent(e)}>
-                                {e.miembros && e.miembros.some(m => m.id === currentUser.id) ? '🚪 Abandonar' : '➕ Unirse'}
-                              </button>
-                            )}
-                            {hasPermission('manage_events') && (
-                              <button className="btn btn-secondary btn-sm" onClick={() => handleManageMembers(e)}>
-                                👥 Gestionar Miembros
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
             </div>
           )}
 
@@ -572,9 +659,10 @@ const Dashboard = ({ currentUser, onLogout }) => {
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>📦 Categoría</th>
-                      <th>📝 Descripción</th>
+                      <th>📦 Item</th>
+                      <th>🏷️ Categoría</th>
                       <th>🔢 Cantidad</th>
+                      <th>🕒 Fecha</th>
                       <th>📊 Estado</th>
                       <th>⚙️ Acciones</th>
                     </tr>
@@ -585,27 +673,19 @@ const Dashboard = ({ currentUser, onLogout }) => {
                         <td style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
                           #{d.id}
                         </td>
+                        <td style={{ fontWeight: '500' }}>{d.nombre}</td>
                         <td>
                           <span className="category-tag">
-                            {d.categoria === 0 ? '👕 ROPA' :
-                             d.categoria === 1 ? '🍕 ALIMENTOS' :
-                             d.categoria === 2 ? '🧸 JUGUETES' :
-                             d.categoria === 3 ? '📚 ÚTILES' : 'OTROS'}
+                            {d.categoria}
                           </span>
                         </td>
-                        <td>{d.descripcion}</td>
+                        <td>{d.cantidad}</td>
                         <td>
-                          <span style={{
-                            fontWeight: '700',
-                            fontSize: '1.1rem',
-                            color: 'var(--primary-color)'
-                          }}>
-                            {d.cantidad}
-                          </span>
+                          {new Date(d.fecha || Date.now()).toLocaleDateString()}
                         </td>
                         <td>
-                          <span className={`status-badge ${d.eliminado ? 'status-inactive' : 'status-active'}`}>
-                            {d.eliminado ? '❌ Eliminado' : '✅ Disponible'}
+                          <span className={`status-badge ${d.activo ? 'status-active' : 'status-inactive'}`}>
+                            {d.activo ? '✓ Disponible' : '✗ No disponible'}
                           </span>
                         </td>
                         <td>
@@ -625,6 +705,263 @@ const Dashboard = ({ currentUser, onLogout }) => {
               </div>
             </div>
           )}
+
+          {activeTab === 'solicitudes' && hasPermission('manage_requests') && (
+            <div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--spacing-lg)',
+                flexWrap: 'wrap',
+                gap: 'var(--spacing-md)'
+              }}>
+                <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>📋 Solicitudes de Donaciones</h2>
+                <button className="btn btn-primary" onClick={() => handleCreate('request')}>
+                  ➕ Nueva Solicitud
+                </button>
+              </div>
+
+              <div style={{ overflowX: 'auto', borderRadius: 'var(--border-radius-md)' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>🏢 Organización</th>
+                      <th>📋 Solicitud</th>
+                      <th>📝 Items</th>
+                      <th>🕒 Fecha</th>
+                      <th>⚙️ Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {solicitudes.map(s => (
+                      <tr key={s.requestId}>
+                        <td style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
+                          #{s.requestId}
+                        </td>
+                        <td>
+                          <span className="category-tag">
+                            {s.organizationId}
+                          </span>
+                        </td>
+                        <td style={{ fontWeight: '500' }}>
+                          Solicitud de {s.requestedDonations?.length || 0} items
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)' }}>
+                            {s.requestedDonations?.slice(0, 2).map((item, idx) => (
+                              <span key={idx} className="category-tag" style={{ fontSize: '0.7rem' }}>
+                                {item.category}
+                              </span>
+                            ))}
+                            {s.requestedDonations?.length > 2 && (
+                              <span className="category-tag" style={{ fontSize: '0.7rem' }}>
+                                +{s.requestedDonations.length - 2} más
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          {new Date(s.createdAt || Date.now()).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <div className="action-buttons">
+                            <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(s, 'request')}>
+                              ✏️ Ver Detalles
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'ofertas' && hasPermission('manage_offers') && (
+            <div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--spacing-lg)',
+                flexWrap: 'wrap',
+                gap: 'var(--spacing-md)'
+              }}>
+                <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>🎁 Ofertas de Donaciones</h2>
+                <button className="btn btn-primary" onClick={() => handleCreate('offer')}>
+                  ➕ Nueva Oferta
+                </button>
+              </div>
+
+              <div style={{ overflowX: 'auto', borderRadius: 'var(--border-radius-md)' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>🏢 Organización</th>
+                      <th>🎁 Oferta</th>
+                      <th>📝 Items</th>
+                      <th>🕒 Fecha</th>
+                      <th>⚙️ Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ofertas.map(o => (
+                      <tr key={o.offerId}>
+                        <td style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
+                          #{o.offerId}
+                        </td>
+                        <td>
+                          <span className="category-tag">
+                            {o.organizationId}
+                          </span>
+                        </td>
+                        <td style={{ fontWeight: '500' }}>
+                          Oferta de {o.donations?.length || 0} items
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)' }}>
+                            {o.donations?.slice(0, 2).map((item, idx) => (
+                              <span key={idx} className="category-tag" style={{ fontSize: '0.7rem' }}>
+                                {item.category}
+                              </span>
+                            ))}
+                            {o.donations?.length > 2 && (
+                              <span className="category-tag" style={{ fontSize: '0.7rem' }}>
+                                +{o.donations.length - 2} más
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          {new Date(o.createdAt || Date.now()).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <div className="action-buttons">
+                            <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(o, 'offer')}>
+                              ✏️ Ver Detalles
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'transferencias' && hasPermission('manage_transfers') && (
+            <div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--spacing-lg)',
+                flexWrap: 'wrap',
+                gap: 'var(--spacing-md)'
+              }}>
+                <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>🔄 Transferencias de Donaciones</h2>
+                <button className="btn btn-primary" onClick={() => handleCreate('transfer')}>
+                  ➕ Nueva Transferencia
+                </button>
+              </div>
+
+              <div style={{ overflowX: 'auto', borderRadius: 'var(--border-radius-md)' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>🏢 Destinatario</th>
+                      <th>📦 Items</th>
+                      <th>🔢 Cantidad</th>
+                      <th>🕒 Fecha</th>
+                      <th>📊 Estado</th>
+                      <th>⚙️ Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transferencias.map(t => (
+                      <tr key={t.transferId}>
+                        <td style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
+                          #{t.transferId}
+                        </td>
+                        <td>
+                          <span className="category-tag">
+                            {t.recipientOrgId || 'N/A'}
+                          </span>
+                        </td>
+                        <td>
+                          {t.donations?.length > 0 ? (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)' }}>
+                              {t.donations.slice(0, 2).map((item, idx) => (
+                                <span key={idx} className="category-tag" style={{ fontSize: '0.7rem' }}>
+                                  {item.category}
+                                </span>
+                              ))}
+                              {t.donations.length > 2 && (
+                                <span className="category-tag" style={{ fontSize: '0.7rem' }}>
+                                  +{t.donations.length - 2} más
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>Sin items</span>
+                          )}
+                        </td>
+                        <td>
+                          {t.donations?.reduce((total, item) => total + parseInt(item.quantity || 0), 0) || 0}
+                        </td>
+                        <td>
+                          {new Date(t.createdAt || Date.now()).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <span className={`status-badge ${t.status === 'COMPLETED' ? 'status-active' : 'status-inactive'}`}>
+                            {t.status || 'PENDING'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="action-buttons">
+                            <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(t, 'transfer')}>
+                              ✏️ Ver Detalles
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'eventos-externos' && hasPermission('manage_external_events') && (
+            <div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--spacing-lg)',
+                flexWrap: 'wrap',
+                gap: 'var(--spacing-md)'
+              }}>
+                <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>🌍 Eventos Externos</h2>
+                {hasPermission('manage_events') && (
+                  <button className="btn btn-primary" onClick={() => handleCreate('external-event')}>
+                    ➕ Nuevo Evento Externo
+                  </button>
+                )}
+              </div>
+
+              <ExternalEventsList
+                currentUser={currentUser}
+                onRefresh={() => fetchEventosExternos()}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -636,6 +973,10 @@ const Dashboard = ({ currentUser, onLogout }) => {
                 {formType === 'user' && (selectedItem ? '✏️ Editar Usuario' : '➕ Crear Usuario')}
                 {formType === 'event' && (selectedItem ? '✏️ Editar Evento' : '➕ Crear Evento')}
                 {formType === 'inventory' && (selectedItem ? '✏️ Editar Donación' : '➕ Crear Donación')}
+                {formType === 'request' && (selectedItem ? '✏️ Editar Solicitud' : '➕ Crear Solicitud')}
+                {formType === 'offer' && (selectedItem ? '✏️ Editar Oferta' : '➕ Crear Oferta')}
+                {formType === 'transfer' && (selectedItem ? '✏️ Editar Transferencia' : '➕ Crear Transferencia')}
+                {formType === 'external-event' && (selectedItem ? '✏️ Editar Evento Externo' : '➕ Crear Evento Externo')}
               </h2>
               <button className="close-button" onClick={handleFormCancel}>×</button>
             </div>
@@ -659,6 +1000,38 @@ const Dashboard = ({ currentUser, onLogout }) => {
               {formType === 'inventory' && (
                 <InventoryForm
                   item={selectedItem}
+                  onSuccess={handleFormSuccess}
+                  onCancel={handleFormCancel}
+                  currentUser={currentUser}
+                />
+              )}
+              {formType === 'request' && (
+                <DonationRequestForm
+                  request={selectedItem}
+                  onSuccess={handleFormSuccess}
+                  onCancel={handleFormCancel}
+                  currentUser={currentUser}
+                />
+              )}
+              {formType === 'offer' && (
+                <DonationOfferForm
+                  offer={selectedItem}
+                  onSuccess={handleFormSuccess}
+                  onCancel={handleFormCancel}
+                  currentUser={currentUser}
+                />
+              )}
+              {formType === 'transfer' && (
+                <TransferForm
+                  transfer={selectedItem}
+                  onSuccess={handleFormSuccess}
+                  onCancel={handleFormCancel}
+                  currentUser={currentUser}
+                />
+              )}
+              {formType === 'external-event' && (
+                <ExternalEventForm
+                  event={selectedItem}
                   onSuccess={handleFormSuccess}
                   onCancel={handleFormCancel}
                   currentUser={currentUser}
