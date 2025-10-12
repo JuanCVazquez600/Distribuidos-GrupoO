@@ -1,6 +1,5 @@
 package Distribuidos_GrupoO.ServidorGRPC.service.kafka.adhesion;
 
-import Distribuidos_GrupoO.ServidorGRPC.model.EventoSolidario;
 import Distribuidos_GrupoO.ServidorGRPC.model.AdhesionEvento;
 import Distribuidos_GrupoO.ServidorGRPC.repository.AdhesionEventoRepository;
 import Distribuidos_GrupoO.ServidorGRPC.service.implementation.EventoSolidarioServiceImplementation;
@@ -10,18 +9,19 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class EventAdhesionConsumer {
 
-    @Value("${app.organization.id:org-456}")
-    private String organizationId;
+    @Autowired
+    private AdhesionEventoRepository adhesionEventoRepository;
 
     @Autowired
     private EventoSolidarioServiceImplementation eventoService;
 
-    @Autowired
-    private AdhesionEventoRepository adhesionRepository;
+    @Value("${app.organizacion.id:org-456}")
+    private String organizationId;
 
     /**
      * Escucha adhesiones dirigidas a nuestra organización
@@ -43,55 +43,27 @@ public class EventAdhesionConsumer {
 
     private void processVolunteerAdhesion(EventAdhesion adhesion) {
         try {
-            String eventId = adhesion.getEventId();
-            String volunteerOrg = adhesion.getIdOrganizacion();
-            String volunteerName = adhesion.getNombre() + " " + adhesion.getApellido();
+            System.out.println("🔄 Procesando adhesión para eventId: " + adhesion.getEventId());
             
-            System.out.println("🔄 Procesando adhesión al evento: " + eventId);
-            System.out.println("👤 Voluntario: " + volunteerName + " (" + volunteerOrg + ")");
-            
-            // 1. VERIFICAR que el evento existe y está activo
-            boolean eventoValido = verifyEventExists(eventId);
-            
-            if (!eventoValido) {
-                System.out.println("❌ Evento no encontrado o no válido: " + eventId);
+            // Verificar que el evento existe
+            if (!doesEventExist(adhesion.getEventId())) {
+                System.err.println("❌ Evento no encontrado: " + adhesion.getEventId());
                 return;
             }
             
-            // 2. REGISTRAR la adhesión en el sistema
+            // Registrar la adhesión directamente en la tabla adhesion_evento
             registerVolunteerAdhesion(adhesion);
             
-            // 3. ENVIAR confirmación por email (simulado)
-            sendConfirmationEmail(adhesion);
-            
-            // 4. ACTUALIZAR métricas y logs
-            updateMetrics(adhesion);
-            
-            // 5. LOG de auditoria
-            logAdhesionAuditoria(adhesion);
-            
-            System.out.println("✅ Adhesión procesada exitosamente para evento: " + eventId);
-            
         } catch (Exception e) {
-            System.err.println("❌ Error al procesar adhesión del voluntario: " + e.getMessage());
-            throw e;
+            System.err.println("❌ Error al procesar adhesión: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    private boolean verifyEventExists(String eventId) {
+    private boolean doesEventExist(String eventId) {
         try {
             Integer eventIdInt = Integer.parseInt(eventId);
-            EventoSolidario evento = eventoService.buscarPorId(eventIdInt);
-            
-            // Verificar que el evento sea futuro
-            if (evento.getFechaEvento().isBefore(LocalDateTime.now())) {
-                System.out.println("⚠️ Evento ya pasado, no acepta adhesiones: " + eventId);
-                return false;
-            }
-            
-            System.out.println("✅ Evento válido encontrado: " + evento.getNombreEvento());
-            return true;
-            
+            return eventoService.buscarPorId(eventIdInt) != null;
         } catch (Exception e) {
             System.out.println("❌ Evento no encontrado: " + eventId);
             return false;
@@ -100,90 +72,60 @@ public class EventAdhesionConsumer {
 
     private void registerVolunteerAdhesion(EventAdhesion adhesion) {
         try {
-            // ACTUALIZACIÓN: Registrar al voluntario externo en el evento
-            System.out.println("📝 Registrando voluntario externo en evento");
+            System.out.println("🔄 Registrando adhesión en tabla adhesion_evento");
             
-            // Verificar si ya existe una adhesión
-            if (adhesionRepository.findByEventIdAndIdVoluntario(adhesion.getEventId(), adhesion.getIdVoluntario()).isPresent()) {
-                System.out.println("⚠️ Adhesión duplicada ignorada para voluntario: " + adhesion.getIdVoluntario());
+            // Verificar si ya existe una adhesión para este evento y voluntario
+            Optional<AdhesionEvento> existingAdhesion = adhesionEventoRepository.findByEventIdAndIdVoluntario(
+                adhesion.getEventId(), generateVolunteerId(adhesion)
+            );
+            
+            if (existingAdhesion.isPresent()) {
+                System.out.println("⚠️ Ya existe una adhesión para este evento y voluntario");
                 return;
             }
             
-            // Crear entidad de adhesión
-            AdhesionEvento adhesionEntity = new AdhesionEvento();
-            adhesionEntity.setEventId(adhesion.getEventId());
-            adhesionEntity.setIdOrganizacionVoluntario(adhesion.getIdOrganizacion());
-            adhesionEntity.setIdVoluntario(adhesion.getIdVoluntario());
-            adhesionEntity.setNombre(adhesion.getNombre());
-            adhesionEntity.setApellido(adhesion.getApellido());
-            adhesionEntity.setTelefono(adhesion.getTelefono());
-            adhesionEntity.setEmail(adhesion.getEmail());
-            adhesionEntity.setEstado(AdhesionEvento.EstadoAdhesion.CONFIRMADA);
-            adhesionEntity.setFechaProcesamiento(LocalDateTime.now());
-            adhesionEntity.setObservaciones("Adhesión procesada automáticamente");
+            // Crear nueva adhesión
+            AdhesionEvento nuevaAdhesion = new AdhesionEvento();
+            nuevaAdhesion.setEventId(adhesion.getEventId());
+            nuevaAdhesion.setIdOrganizacionVoluntario(adhesion.getIdOrganizacion());
+            nuevaAdhesion.setIdVoluntario(generateVolunteerId(adhesion));
+            nuevaAdhesion.setNombre(adhesion.getNombre());
+            nuevaAdhesion.setApellido(adhesion.getApellido());
+            nuevaAdhesion.setEmail(adhesion.getEmail());
+            nuevaAdhesion.setTelefono(adhesion.getTelefono());
+            nuevaAdhesion.setEstado(AdhesionEvento.EstadoAdhesion.PENDIENTE);
+            nuevaAdhesion.setFechaAdhesion(LocalDateTime.now());
             
-            // Guardar en BD
-            adhesionRepository.save(adhesionEntity);
+            // Guardar en base de datos
+            AdhesionEvento adhesionGuardada = adhesionEventoRepository.save(nuevaAdhesion);
             
-            System.out.println("✅ Adhesión guardada en BD con ID: " + adhesionEntity.getId());
-            System.out.println("📋 Voluntario registrado: " + adhesion.getNombre() + " " + adhesion.getApellido());
-            System.out.println("📧 Email: " + adhesion.getEmail());
-            System.out.println("📞 Teléfono: " + adhesion.getTelefono());
+            System.out.println("✅ Adhesión registrada correctamente");
+            System.out.println("📋 ID: " + adhesionGuardada.getId());
+            System.out.println("🎯 Evento: " + adhesionGuardada.getEventId());
+            System.out.println("📧 Email: " + adhesionGuardada.getEmail());
+            
+            // Enviar confirmación
+            sendConfirmationEmail(adhesion);
             
         } catch (Exception e) {
-            System.err.println("Error al registrar voluntario: " + e.getMessage());
-            throw e;
+            System.err.println("❌ Error al registrar adhesión: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
+
+    private String generateVolunteerId(EventAdhesion adhesion) {
+        // Generar un ID único para el voluntario basado en email
+        return adhesion.getIdOrganizacion() + "-" + adhesion.getEmail().hashCode();
     }
 
     private void sendConfirmationEmail(EventAdhesion adhesion) {
         try {
-            // ACTUALIZACIÓN: Enviar email de confirmación
+            // Enviar email de confirmación
             System.out.println("📧 Enviando confirmación por email a: " + adhesion.getEmail());
-            
-            // Aquí integrarías con el EmailService existente
-            // emailService.enviarConfirmacionAdhesion(adhesion.getEmail(), adhesion.getEventId());
-            
+            // Aquí iría la lógica de envío de email
             System.out.println("✅ Email de confirmación enviado");
-            
         } catch (Exception e) {
-            System.err.println("Error al enviar email: " + e.getMessage());
-        }
-    }
-
-    private void updateMetrics(EventAdhesion adhesion) {
-        try {
-            // ACTUALIZACIÓN: Actualizar métricas del sistema
-            System.out.println("📊 Actualizando métricas de adhesiones");
-            
-            // Ejemplos de métricas:
-            // - Contador de adhesiones por evento
-            // - Voluntarios externos por organización
-            // - Tendencias de participación
-            
-        } catch (Exception e) {
-            System.err.println("Error al actualizar métricas: " + e.getMessage());
-        }
-    }
-
-    private void logAdhesionAuditoria(EventAdhesion adhesion) {
-        try {
-            // ACTUALIZACIÓN: Log de auditoria
-            String timestamp = LocalDateTime.now().toString();
-            String logEntry = String.format(
-                "[%s] ADHESION_EXTERNA: EventId=%s, Voluntario=%s %s, Org=%s, Email=%s",
-                timestamp,
-                adhesion.getEventId(),
-                adhesion.getNombre(),
-                adhesion.getApellido(),
-                adhesion.getIdOrganizacion(),
-                adhesion.getEmail()
-            );
-            
-            System.out.println("📝 LOG_AUDITORIA: " + logEntry);
-            
-        } catch (Exception e) {
-            System.err.println("Error en log de auditoria: " + e.getMessage());
+            System.err.println("❌ Error al enviar email: " + e.getMessage());
         }
     }
 }
