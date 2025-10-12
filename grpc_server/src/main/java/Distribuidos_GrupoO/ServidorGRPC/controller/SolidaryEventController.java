@@ -112,9 +112,22 @@ public class SolidaryEventController {
      }
 
      try {
+         // 1. Enviar notificación de baja a Kafka
          EventCancellation eventCancellation = new EventCancellation(organizationId, eventId);
          eventCancellationProducer.sendEventCancellation(eventCancellation);
-         return ResponseEntity.ok("Evento dado de baja enviado al topic correctamente");
+         
+         // 2. Eliminar evento de BD local (si es nuestro evento)
+         try {
+             int eventIdInt = Integer.parseInt(eventId);
+             eventoSolidarioRepository.deleteById(eventIdInt);
+             System.out.println("Evento eliminado de BD local: " + eventId);
+         } catch (NumberFormatException e) {
+             System.out.println("EventId no es numérico, no se elimina de BD local: " + eventId);
+         } catch (Exception e) {
+             System.out.println("Error eliminando evento de BD local: " + e.getMessage());
+         }
+         
+         return ResponseEntity.ok("Evento dado de baja y eliminado de BD local");
      } catch (Exception e) {
          return ResponseEntity.internalServerError().body("Error al enviar evento de baja: " + e.getMessage());
      }
