@@ -10,8 +10,7 @@ public class DonationTransferProducer {
     private KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendTransfer(String recipientOrgId, DonationTransfer transfer) {
-        // Use a fixed topic name without slashes
-        String topic = "transferencia-donaciones";
+        String topic = "transferencia-donaciones-" + recipientOrgId;
         kafkaTemplate.send(topic, transfer);
     }
 }

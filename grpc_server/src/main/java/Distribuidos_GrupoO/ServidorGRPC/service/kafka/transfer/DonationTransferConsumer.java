@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class DonationTransferConsumer {
@@ -15,16 +18,11 @@ public class DonationTransferConsumer {
     @Autowired
     private IInventarioDeDonacionesService inventarioService;
 
-    @KafkaListener(topics = "transferencia-donaciones", groupId = "transferencias-group", containerFactory = "donationTransferKafkaListenerContainerFactory")
+    // Se escucha solamente el topic específico de la organización.
+    @KafkaListener(topics = "#{ 'transferencia-donaciones-' + '${spring.organization.id}' }", groupId = "transferencias-group", containerFactory = "donationTransferKafkaListenerContainerFactory")
+    @Transactional
     public void listen(DonationTransfer transfer) {
         try {
-            // Verificar si la transferencia es para nuestra organización
-            if (transfer.getRecipientOrganizationId() == null || !organizationId.equals(transfer.getRecipientOrganizationId())) {
-                // Si no es para nosotros, ignoramos el mensaje
-                System.out.println("Transferencia ignorada - no es para nuestra organización. Destinatario: " + transfer.getRecipientOrganizationId());
-                return;
-            }
-            
             System.out.println("Procesando transferencia para nuestra organización: " + organizationId);
             for (DonationTransfer.DonationItem item : transfer.getDonations()) {
                 InventarioDeDonaciones.CategoriaEnum categoria;
@@ -43,7 +41,13 @@ public class DonationTransferConsumer {
                     System.err.println("Cantidad inválida: " + item.getQuantity());
                     continue;
                 }
-                inventarioService.crearOActualizarInventario(categoria, descripcion, cantidad);
+                Optional<InventarioDeDonaciones> opt = inventarioService.buscarPorCategoriaYDescripcion(categoria, descripcion);
+                if (opt.isPresent()) {
+                    InventarioDeDonaciones inventario = opt.get();
+                    inventarioService.actualizarCantidad(inventario, cantidad);
+                } else {
+                    inventarioService.crearOActualizarInventario(categoria, descripcion, cantidad);
+                }
             }
             System.out.println("Recibida transferencia para esta organización: " + transfer);
         } catch (Exception e) {
