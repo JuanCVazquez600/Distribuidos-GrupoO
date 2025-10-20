@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controlador para gestión de solicitudes de donaciones
+ */
 @RestController
 @RequestMapping("/requests")
 public class DonationRequestController {
@@ -23,18 +26,26 @@ public class DonationRequestController {
     @Autowired
     private DonationCancellationProducer cancellationProducer;
 
+    /**
+     * Publicar una nueva solicitud de donación
+     */
     @PostMapping("/publish")
     public ResponseEntity<String> publishRequest(@RequestBody DonationRequest request) {
         producer.sendRequest(request);
         return ResponseEntity.ok("Solicitud publicada correctamente");
     }
 
+    /**
+     * Listar todas las solicitudes de donación
+     */
     @GetMapping("/list")
     public List<DonationRequest> listRequests() {
         return consumer.getRequests();
     }
 
-
+    /**
+     * Cancelar una solicitud de donación
+     */
     @PostMapping("/cancel")
     public ResponseEntity<String> cancelRequest(@RequestBody DonationCancellation cancellation) {
         cancellationProducer.sendCancellation(cancellation);

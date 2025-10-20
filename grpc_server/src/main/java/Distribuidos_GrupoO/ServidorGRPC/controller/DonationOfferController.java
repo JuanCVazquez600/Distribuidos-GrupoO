@@ -12,17 +12,25 @@ import java.util.List;
 @RestController
 @RequestMapping("/offers")
 public class DonationOfferController {
+    
     @Autowired
     private DonationOfferProducer producer;
+    
     @Autowired
     private DonationOfferConsumer consumer;
 
+    /**
+     * Publica una oferta de donación en Kafka
+     */
     @PostMapping("/publish")
     public ResponseEntity<String> publishOffer(@RequestBody DonationOffer offer) {
         producer.sendOffer(offer);
         return ResponseEntity.ok("Oferta publicada correctamente");
     }
 
+    /**
+     * Lista ofertas recibidas de otras organizaciones
+     */
     @GetMapping("/list")
     public List<DonationOffer> listOffers() {
         return consumer.getOffers();
