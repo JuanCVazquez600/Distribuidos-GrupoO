@@ -4,3 +4,4 @@ protobuf
 flask
 flask-cors
 requests
+zeep

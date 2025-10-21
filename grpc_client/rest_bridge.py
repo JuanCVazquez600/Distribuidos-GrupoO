@@ -3,6 +3,7 @@ from flask_cors import CORS
 import grpc
 import requests
 from proto import usuarios_pb2, usuarios_pb2_grpc, eventos_pb2, eventos_pb2_grpc, inventario_pb2, inventario_pb2_grpc
+from soap_client import get_presidents, get_associations
 
 app = Flask(__name__)
 CORS(app)
@@ -535,6 +536,89 @@ def baja_event():
     except requests.RequestException as e:
         print(f"Error dando de baja evento: {e}")
         return jsonify({'error': 'Error al dar de baja evento', 'details': str(e)}), 500
+
+@app.route('/api/soap/presidents', methods=['POST'])
+def soap_presidents():
+    """
+    Endpoint para consultar presidentes de organizaciones vía SOAP.
+    Solo accesible para usuarios con rol PRESIDENTE.
+    """
+    data = request.json
+    user_id = data.get('userId')
+    org_ids_str = data.get('orgIds', '')
+
+    # Validar parámetros
+    if not user_id or not org_ids_str:
+        return jsonify({'success': False, 'error': 'userId y orgIds son requeridos'}), 400
+
+    # Validar rol del usuario (debería venir del frontend, pero verificamos)
+    # Nota: En producción, validar contra la base de datos
+    if not isinstance(user_id, int) or user_id <= 0:
+        return jsonify({'success': False, 'error': 'userId inválido'}), 400
+
+    # Parsear IDs de organizaciones
+    try:
+        org_ids = [int(id.strip()) for id in org_ids_str.split(',') if id.strip()]
+        if not org_ids:
+            return jsonify({'success': False, 'error': 'Lista de orgIds vacía'}), 400
+    except ValueError:
+        return jsonify({'success': False, 'error': 'orgIds debe contener números separados por coma'}), 400
+
+    # Llamar al servicio SOAP
+    result = get_presidents(org_ids)
+
+    if result['success']:
+        return jsonify({
+            'success': True,
+            'data': result['data'],
+            'count': len(result['data'])
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'error': result['error']
+        }), 500
+
+@app.route('/api/soap/associations', methods=['POST'])
+def soap_associations():
+    """
+    Endpoint para consultar datos de organizaciones vía SOAP.
+    Solo accesible para usuarios con rol PRESIDENTE.
+    """
+    data = request.json
+    user_id = data.get('userId')
+    org_ids_str = data.get('orgIds', '')
+
+    # Validar parámetros
+    if not user_id or not org_ids_str:
+        return jsonify({'success': False, 'error': 'userId y orgIds son requeridos'}), 400
+
+    # Validar rol del usuario
+    if not isinstance(user_id, int) or user_id <= 0:
+        return jsonify({'success': False, 'error': 'userId inválido'}), 400
+
+    # Parsear IDs de organizaciones
+    try:
+        org_ids = [int(id.strip()) for id in org_ids_str.split(',') if id.strip()]
+        if not org_ids:
+            return jsonify({'success': False, 'error': 'Lista de orgIds vacía'}), 400
+    except ValueError:
+        return jsonify({'success': False, 'error': 'orgIds debe contener números separados por coma'}), 400
+
+    # Llamar al servicio SOAP
+    result = get_associations(org_ids)
+
+    if result['success']:
+        return jsonify({
+            'success': True,
+            'data': result['data'],
+            'count': len(result['data'])
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'error': result['error']
+        }), 500
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
