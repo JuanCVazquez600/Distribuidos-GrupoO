@@ -558,7 +558,7 @@ def soap_presidents():
 
     # Parsear IDs de organizaciones
     try:
-        org_ids = [int(id.strip()) for id in org_ids_str.split(',') if id.strip()]
+        org_ids = [str(id.strip()) for id in org_ids_str.split(',') if id.strip()]
         if not org_ids:
             return jsonify({'success': False, 'error': 'Lista de orgIds vacía'}), 400
     except ValueError:
@@ -599,7 +599,7 @@ def soap_associations():
 
     # Parsear IDs de organizaciones
     try:
-        org_ids = [int(id.strip()) for id in org_ids_str.split(',') if id.strip()]
+        org_ids = [str(id.strip()) for id in org_ids_str.split(',') if id.strip()]
         if not org_ids:
             return jsonify({'success': False, 'error': 'Lista de orgIds vacía'}), 400
     except ValueError:

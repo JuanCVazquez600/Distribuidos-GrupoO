@@ -88,14 +88,16 @@ def get_associations(org_ids):
 
         # Parsear respuesta
         associations = []
-        if hasattr(response, 'list_associationsResult') and response.list_associationsResult:
-            for association in response.list_associationsResult:
-                associations.append({
-                    'id': association.id,
-                    'name': association.name,
-                    'address': association.address,
-                    'phone': association.phone
-                })
+        if isinstance(response, list) and response:
+            # Filtrar elementos None y procesar los válidos
+            for association in response:
+                if association is not None:
+                    associations.append({
+                        'id': association.id,
+                        'name': association.name,
+                        'address': association.address,
+                        'phone': association.phone
+                    })
 
         return {
             'success': True,

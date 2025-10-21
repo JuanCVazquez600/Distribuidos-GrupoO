@@ -64,12 +64,64 @@ const SoapQuery = () => {
   };
 
   return (
-    <div className="soap-query-container">
-      <h2>Consulta SOAP - Presidentes y Organizaciones</h2>
+    <div
+      style={{
+        padding: "var(--spacing-lg)",
+        maxWidth: "1200px",
+        margin: "0 auto",
+      }}
+    >
+      <div
+        style={{
+          marginBottom: "var(--spacing-2xl)",
+          textAlign: "center",
+        }}
+      >
+        <h2
+          style={{
+            marginBottom: "var(--spacing-md)",
+            color: "var(--text-primary)",
+            fontSize: "1.8rem",
+            fontWeight: "600",
+          }}
+        >
+          🧼 Consulta SOAP - Presidentes y Organizaciones
+        </h2>
+        <p
+          style={{
+            color: "var(--text-secondary)",
+            fontSize: "1rem",
+            margin: 0,
+          }}
+        >
+          Consulta datos de presidentes y organizaciones de la red de ONGs
+        </p>
+      </div>
 
-      <div className="query-form">
-        <div className="form-group">
-          <label htmlFor="orgIds">
+      <div
+        style={{
+          background: "var(--background-light)",
+          padding: "var(--spacing-xl)",
+          borderRadius: "var(--border-radius-lg)",
+          boxShadow: "var(--shadow-md)",
+          marginBottom: "var(--spacing-xl)",
+        }}
+      >
+        <div
+          style={{
+            marginBottom: "var(--spacing-lg)",
+          }}
+        >
+          <label
+            htmlFor="orgIds"
+            style={{
+              display: "block",
+              marginBottom: "var(--spacing-sm)",
+              fontWeight: "500",
+              color: "var(--text-primary)",
+              fontSize: "1rem",
+            }}
+          >
             IDs de Organizaciones (separados por coma):
           </label>
           <input
@@ -78,54 +130,225 @@ const SoapQuery = () => {
             value={orgIds}
             onChange={(e) => setOrgIds(e.target.value)}
             placeholder="Ej: 6,5,8,10"
-            className="form-control"
+            style={{
+              width: "100%",
+              padding: "var(--spacing-md)",
+              border: "1px solid var(--border-color)",
+              borderRadius: "var(--border-radius-md)",
+              fontSize: "1rem",
+              background: "white",
+              color: "var(--text-primary)",
+              boxSizing: "border-box",
+            }}
           />
         </div>
 
-        <div className="button-group">
+        <div
+          style={{
+            display: "flex",
+            gap: "var(--spacing-md)",
+            flexWrap: "wrap",
+          }}
+        >
           <button
             onClick={handlePresidentsQuery}
             disabled={loading}
-            className="btn btn-primary"
+            style={{
+              padding: "var(--spacing-md) var(--spacing-xl)",
+              background: loading
+                ? "var(--text-muted)"
+                : "var(--primary-color)",
+              color: "white",
+              border: "none",
+              borderRadius: "var(--border-radius-md)",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontSize: "1rem",
+              fontWeight: "500",
+              transition: "all 0.2s ease",
+              flex: "1",
+              minWidth: "200px",
+            }}
           >
-            {loading ? "Consultando..." : "Consultar Presidentes"}
+            {loading ? "🔄 Consultando..." : "👥 Consultar Presidentes"}
           </button>
 
           <button
             onClick={handleAssociationsQuery}
             disabled={loading}
-            className="btn btn-secondary"
+            style={{
+              padding: "var(--spacing-md) var(--spacing-xl)",
+              background: loading
+                ? "var(--text-muted)"
+                : "var(--accent-color)",
+              color: "white",
+              border: "none",
+              borderRadius: "var(--border-radius-md)",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontSize: "1rem",
+              fontWeight: "500",
+              transition: "all 0.2s ease",
+              flex: "1",
+              minWidth: "200px",
+            }}
           >
-            {loading ? "Consultando..." : "Consultar Organizaciones"}
+            {loading ? "🔄 Consultando..." : "🏢 Consultar Organizaciones"}
           </button>
         </div>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && (
+        <div
+          style={{
+            background: "var(--danger-color)",
+            color: "white",
+            padding: "var(--spacing-md)",
+            borderRadius: "var(--border-radius-md)",
+            marginBottom: "var(--spacing-lg)",
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--spacing-sm)",
+          }}
+        >
+          <span>⚠️</span>
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Tabla de Presidentes */}
       {presidentsData.length > 0 && (
-        <div className="results-section">
-          <h3>Presidentes Encontrados</h3>
-          <div className="table-responsive">
-            <table className="table table-striped">
+        <div
+          style={{
+            background: "var(--background-light)",
+            padding: "var(--spacing-xl)",
+            borderRadius: "var(--border-radius-lg)",
+            boxShadow: "var(--shadow-md)",
+            marginBottom: "var(--spacing-xl)",
+          }}
+        >
+          <h3
+            style={{
+              marginBottom: "var(--spacing-lg)",
+              color: "var(--text-primary)",
+              fontSize: "1.4rem",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--spacing-sm)",
+            }}
+          >
+            👥 Presidentes Encontrados ({presidentsData.length})
+          </h3>
+          <div
+            style={{
+              overflowX: "auto",
+              borderRadius: "var(--border-radius-md)",
+            }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                background: "white",
+                borderRadius: "var(--border-radius-md)",
+                overflow: "hidden",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Dirección</th>
-                  <th>Teléfono</th>
-                  <th>ID Organización</th>
+                <tr
+                  style={{
+                    background: "var(--primary-color)",
+                    color: "white",
+                  }}
+                >
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    ID
+                  </th>
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    👤 Nombre
+                  </th>
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    📍 Dirección
+                  </th>
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    📞 Teléfono
+                  </th>
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    🏢 ID Organización
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {presidentsData.map((president, index) => (
-                  <tr key={index}>
-                    <td>{president.id}</td>
-                    <td>{president.name}</td>
-                    <td>{president.address}</td>
-                    <td>{president.phone}</td>
-                    <td>{president.organization_id}</td>
+                  <tr
+                    key={index}
+                    style={{
+                      borderBottom: "1px solid var(--border-color)",
+                      background: index % 2 === 0 ? "white" : "var(--background-light)",
+                    }}
+                  >
+                    <td
+                      style={{
+                        padding: "var(--spacing-md)",
+                        fontWeight: "600",
+                        color: "var(--primary-color)",
+                      }}
+                    >
+                      #{president.id}
+                    </td>
+                    <td style={{ padding: "var(--spacing-md)" }}>
+                      {president.name}
+                    </td>
+                    <td style={{ padding: "var(--spacing-md)" }}>
+                      {president.address}
+                    </td>
+                    <td style={{ padding: "var(--spacing-md)" }}>
+                      {president.phone}
+                    </td>
+                    <td style={{ padding: "var(--spacing-md)" }}>
+                      <span
+                        style={{
+                          background: "var(--accent-color)",
+                          color: "white",
+                          padding: "var(--spacing-xs) var(--spacing-sm)",
+                          borderRadius: "var(--border-radius-sm)",
+                          fontSize: "0.9rem",
+                          fontWeight: "500",
+                        }}
+                      >
+                        #{president.organization_id}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -136,25 +359,115 @@ const SoapQuery = () => {
 
       {/* Tabla de Organizaciones */}
       {associationsData.length > 0 && (
-        <div className="results-section">
-          <h3>Organizaciones Encontradas</h3>
-          <div className="table-responsive">
-            <table className="table table-striped">
+        <div
+          style={{
+            background: "var(--background-light)",
+            padding: "var(--spacing-xl)",
+            borderRadius: "var(--border-radius-lg)",
+            boxShadow: "var(--shadow-md)",
+          }}
+        >
+          <h3
+            style={{
+              marginBottom: "var(--spacing-lg)",
+              color: "var(--text-primary)",
+              fontSize: "1.4rem",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--spacing-sm)",
+            }}
+          >
+            🏢 Organizaciones Encontradas ({associationsData.length})
+          </h3>
+          <div
+            style={{
+              overflowX: "auto",
+              borderRadius: "var(--border-radius-md)",
+            }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                background: "white",
+                borderRadius: "var(--border-radius-md)",
+                overflow: "hidden",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Dirección</th>
-                  <th>Teléfono</th>
+                <tr
+                  style={{
+                    background: "var(--accent-color)",
+                    color: "white",
+                  }}
+                >
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    ID
+                  </th>
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    🏢 Nombre
+                  </th>
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    📍 Dirección
+                  </th>
+                  <th
+                    style={{
+                      padding: "var(--spacing-md)",
+                      textAlign: "left",
+                      fontWeight: "600",
+                    }}
+                  >
+                    📞 Teléfono
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {associationsData.map((association, index) => (
-                  <tr key={index}>
-                    <td>{association.id}</td>
-                    <td>{association.name}</td>
-                    <td>{association.address}</td>
-                    <td>{association.phone}</td>
+                  <tr
+                    key={index}
+                    style={{
+                      borderBottom: "1px solid var(--border-color)",
+                      background: index % 2 === 0 ? "white" : "var(--background-light)",
+                    }}
+                  >
+                    <td
+                      style={{
+                        padding: "var(--spacing-md)",
+                        fontWeight: "600",
+                        color: "var(--primary-color)",
+                      }}
+                    >
+                      #{association.id}
+                    </td>
+                    <td style={{ padding: "var(--spacing-md)" }}>
+                      {association.name}
+                    </td>
+                    <td style={{ padding: "var(--spacing-md)" }}>
+                      {association.address}
+                    </td>
+                    <td style={{ padding: "var(--spacing-md)" }}>
+                      {association.phone}
+                    </td>
                   </tr>
                 ))}
               </tbody>
