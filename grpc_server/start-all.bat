@@ -17,8 +17,8 @@ echo.
 
 echo [PASO 2] Limpiando datos temporales...
 echo.
-rmdir /s /q "C:\tmp\kafka-logs" 2>nul
-rmdir /s /q "C:\tmp\zookeeper" 2>nul
+rmdir /s /q "C:\kafka-logs" 2>nul
+rmdir /s /q "C:\zookeeper" 2>nul
 echo Datos temporales limpiados.
 echo.
 
