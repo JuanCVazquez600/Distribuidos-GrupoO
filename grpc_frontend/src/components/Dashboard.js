@@ -9,6 +9,7 @@ import ExternalEventForm from "./ExternalEventForm";
 import ExternalEventsList from "./ExternalEventsList";
 import TransferForm from "./TransferForm";
 import SoapQuery from "./SoapQuery";
+import GraphQLDonationsExample from "./GraphQLDonationsExample";
 
 const Dashboard = ({ currentUser, onLogout }) => {
   const [usuarios, setUsuarios] = useState([]);
@@ -540,6 +541,20 @@ const Dashboard = ({ currentUser, onLogout }) => {
                 onClick={() => setActiveTab("soap-query")}
               >
                 🧼 SOAP Query
+              </button>
+            )}
+
+          {/* Pestaña GraphQL - Solo para PRESIDENTE y VOCAL */}
+          {currentUser.rol &&
+            (currentUser.rol.toUpperCase() === "PRESIDENTE" || 
+             currentUser.rol.toUpperCase() === "VOCAL") && (
+              <button
+                className={`tab-button ${
+                  activeTab === "graphql-reports" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("graphql-reports")}
+              >
+                📊 GraphQL Reports
               </button>
             )}
         </div>
@@ -1294,7 +1309,9 @@ const Dashboard = ({ currentUser, onLogout }) => {
               </div>
             )}
 
-          {activeTab === "soap-query" && <SoapQuery />}
+          {activeTab === "soap-query" && <SoapQuery currentUser={currentUser} />}
+          
+          {activeTab === "graphql-reports" && <GraphQLDonationsExample currentUser={currentUser} />}
         </div>
       </div>
 

@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const SoapQuery = () => {
+const SoapQuery = ({ currentUser }) => {
   const [orgIds, setOrgIds] = useState("");
   const [presidentsData, setPresidentsData] = useState([]);
   const [associationsData, setAssociationsData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Obtener userId del localStorage (asumiendo que está guardado después del login)
-  const userId = localStorage.getItem("userId");
 
   const handlePresidentsQuery = async () => {
     if (!orgIds.trim()) {
@@ -23,7 +20,7 @@ const SoapQuery = () => {
       const response = await axios.post(
         "http://localhost:5000/api/soap/presidents",
         {
-          userId: parseInt(userId),
+          userId: currentUser?.id,
           orgIds: orgIds,
         }
       );
@@ -48,7 +45,7 @@ const SoapQuery = () => {
       const response = await axios.post(
         "http://localhost:5000/api/soap/associations",
         {
-          userId: parseInt(userId),
+          userId: currentUser?.id,
           orgIds: orgIds,
         }
       );

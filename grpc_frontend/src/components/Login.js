@@ -22,7 +22,7 @@ const Login = ({ onLoginSuccess }) => {
 
       if (response.data && response.data.exito) {
         // Guardar userId en localStorage para las consultas SOAP
-        localStorage.setItem('userId', response.data.usuario.id);
+        localStorage.setItem('userId', response.data.usuario.id.toString());
         onLoginSuccess(response.data.usuario);
       } else {
         setError(response.data.mensaje || 'Credenciales inválidas');
