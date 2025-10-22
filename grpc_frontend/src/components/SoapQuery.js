@@ -27,7 +27,10 @@ const SoapQuery = ({ currentUser }) => {
       setPresidentsData(response.data.data);
       setAssociationsData([]); // Limpiar datos de asociaciones
     } catch (err) {
-      setError(err.response?.data?.error || "Error al consultar presidentes");
+      const errorMessage =
+        err.response?.data?.error || "Error al consultar presidentes";
+      setError(errorMessage);
+      console.error("Error en consulta de presidentes:", err);
     } finally {
       setLoading(false);
     }
@@ -52,9 +55,10 @@ const SoapQuery = ({ currentUser }) => {
       setAssociationsData(response.data.data);
       setPresidentsData([]); // Limpiar datos de presidentes
     } catch (err) {
-      setError(
-        err.response?.data?.error || "Error al consultar organizaciones"
-      );
+      const errorMessage =
+        err.response?.data?.error || "Error al consultar organizaciones";
+      setError(errorMessage);
+      console.error("Error en consulta de organizaciones:", err);
     } finally {
       setLoading(false);
     }
@@ -174,9 +178,7 @@ const SoapQuery = ({ currentUser }) => {
             disabled={loading}
             style={{
               padding: "var(--spacing-md) var(--spacing-xl)",
-              background: loading
-                ? "var(--text-muted)"
-                : "var(--accent-color)",
+              background: loading ? "var(--text-muted)" : "var(--accent-color)",
               color: "white",
               border: "none",
               borderRadius: "var(--border-radius-md)",
@@ -311,7 +313,8 @@ const SoapQuery = ({ currentUser }) => {
                     key={index}
                     style={{
                       borderBottom: "1px solid var(--border-color)",
-                      background: index % 2 === 0 ? "white" : "var(--background-light)",
+                      background:
+                        index % 2 === 0 ? "white" : "var(--background-light)",
                     }}
                   >
                     <td
@@ -444,7 +447,8 @@ const SoapQuery = ({ currentUser }) => {
                     key={index}
                     style={{
                       borderBottom: "1px solid var(--border-color)",
-                      background: index % 2 === 0 ? "white" : "var(--background-light)",
+                      background:
+                        index % 2 === 0 ? "white" : "var(--background-light)",
                     }}
                   >
                     <td

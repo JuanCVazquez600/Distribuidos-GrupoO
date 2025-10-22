@@ -561,8 +561,14 @@ def soap_presidents():
         org_ids = [str(id.strip()) for id in org_ids_str.split(',') if id.strip()]
         if not org_ids:
             return jsonify({'success': False, 'error': 'Lista de orgIds vacía'}), 400
-    except ValueError:
-        return jsonify({'success': False, 'error': 'orgIds debe contener números separados por coma'}), 400
+        # Validar que sean números enteros
+        for org_id in org_ids:
+            try:
+                int(org_id)
+            except ValueError:
+                return jsonify({'success': False, 'error': f'ID de organización inválido: {org_id}. Debe ser un número entero.'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Error al parsear orgIds: {str(e)}'}), 400
 
     # Llamar al servicio SOAP
     result = get_presidents(org_ids)
@@ -602,8 +608,14 @@ def soap_associations():
         org_ids = [str(id.strip()) for id in org_ids_str.split(',') if id.strip()]
         if not org_ids:
             return jsonify({'success': False, 'error': 'Lista de orgIds vacía'}), 400
-    except ValueError:
-        return jsonify({'success': False, 'error': 'orgIds debe contener números separados por coma'}), 400
+        # Validar que sean números enteros
+        for org_id in org_ids:
+            try:
+                int(org_id)
+            except ValueError:
+                return jsonify({'success': False, 'error': f'ID de organización inválido: {org_id}. Debe ser un número entero.'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Error al parsear orgIds: {str(e)}'}), 400
 
     # Llamar al servicio SOAP
     result = get_associations(org_ids)
