@@ -10,6 +10,7 @@ import ExternalEventsList from "./ExternalEventsList";
 import TransferForm from "./TransferForm";
 import SoapQuery from "./SoapQuery";
 import GraphQLDonationsExample from "./GraphQLDonationsExample";
+import EventParticipationReport from "./EventParticipationReport";
 
 const Dashboard = ({ currentUser, onLogout }) => {
   const [usuarios, setUsuarios] = useState([]);
@@ -544,10 +545,22 @@ const Dashboard = ({ currentUser, onLogout }) => {
               </button>
             )}
 
+          {/* Pestaña Participación en Eventos - Para todos los roles */}
+          {hasPermission("view_all") && (
+            <button
+              className={`tab-button ${
+                activeTab === "event-participation" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("event-participation")}
+            >
+              📅 Participación en Eventos
+            </button>
+          )}
+
           {/* Pestaña GraphQL - Solo para PRESIDENTE y VOCAL */}
           {currentUser.rol &&
-            (currentUser.rol.toUpperCase() === "PRESIDENTE" || 
-             currentUser.rol.toUpperCase() === "VOCAL") && (
+            (currentUser.rol.toUpperCase() === "PRESIDENTE" ||
+              currentUser.rol.toUpperCase() === "VOCAL") && (
               <button
                 className={`tab-button ${
                   activeTab === "graphql-reports" ? "active" : ""
@@ -1309,9 +1322,17 @@ const Dashboard = ({ currentUser, onLogout }) => {
               </div>
             )}
 
-          {activeTab === "soap-query" && <SoapQuery currentUser={currentUser} />}
-          
-          {activeTab === "graphql-reports" && <GraphQLDonationsExample currentUser={currentUser} />}
+          {activeTab === "soap-query" && (
+            <SoapQuery currentUser={currentUser} />
+          )}
+
+          {activeTab === "event-participation" && (
+            <EventParticipationReport currentUser={currentUser} />
+          )}
+
+          {activeTab === "graphql-reports" && (
+            <GraphQLDonationsExample currentUser={currentUser} />
+          )}
         </div>
       </div>
 
