@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, useMutation, gql } from '@apollo/client';
 
 // Definir la consulta GraphQL
 const GET_DONATIONS_STATS = gql`
@@ -60,6 +60,60 @@ const GET_AVAILABLE_CATEGORIES = gql`
   }
 `;
 
+const GET_SAVED_FILTERS = gql`
+  query GetSavedFilters($userId: Int!) {
+    savedFilters(userId: $userId) {
+      id
+      nombre
+      filtros {
+        categoria
+        fechaDesde
+        fechaHasta
+        eliminado
+      }
+      fechaCreacion
+    }
+  }
+`;
+
+const SAVE_FILTER = gql`
+  mutation SaveFilter($userId: Int!, $input: SavedFilterInput!) {
+    saveFilter(userId: $userId, input: $input) {
+      id
+      nombre
+      filtros {
+        categoria
+        fechaDesde
+        fechaHasta
+        eliminado
+      }
+      fechaCreacion
+    }
+  }
+`;
+
+const DELETE_SAVED_FILTER = gql`
+  mutation DeleteSavedFilter($userId: Int!, $filterId: Int!) {
+    deleteSavedFilter(userId: $userId, filterId: $filterId)
+  }
+`;
+
+const UPDATE_SAVED_FILTER_NAME = gql`
+  mutation UpdateSavedFilterName($userId: Int!, $filterId: Int!, $newName: String!) {
+    updateSavedFilterName(userId: $userId, filterId: $filterId, newName: $newName) {
+      id
+      nombre
+      filtros {
+        categoria
+        fechaDesde
+        fechaHasta
+        eliminado
+      }
+      fechaCreacion
+    }
+  }
+`;
+
 const GraphQLDonationsExample = ({ currentUser }) => {
   // Estado para los filtros
   const [filters, setFilters] = useState({
@@ -68,6 +122,16 @@ const GraphQLDonationsExample = ({ currentUser }) => {
     fechaHasta: '',
     eliminado: null // null = ambos, true = eliminados, false = activos
   });
+
+  // Estado para filtros guardados
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [filterName, setFilterName] = useState('');
+  const [showSavedFilters, setShowSavedFilters] = useState(false);
+
+  // Estado para editar filtros
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingFilter, setEditingFilter] = useState(null);
+  const [editFilterName, setEditFilterName] = useState('');
 
   // Consulta para estadísticas básicas
   const { 
@@ -107,6 +171,116 @@ const GraphQLDonationsExample = ({ currentUser }) => {
     variables: { userId: currentUser?.id },
     skip: !currentUser?.id,
   });
+
+  // Consulta para obtener filtros guardados
+  const { 
+    loading: savedFiltersLoading, 
+    error: savedFiltersError, 
+    data: savedFiltersData,
+    refetch: refetchSavedFilters
+  } = useQuery(GET_SAVED_FILTERS, {
+    variables: { userId: currentUser?.id },
+    skip: !currentUser?.id,
+  });
+
+  // Mutations para filtros guardados
+  const [saveFilterMutation] = useMutation(SAVE_FILTER, {
+    onCompleted: () => {
+      setShowSaveModal(false);
+      setFilterName('');
+      refetchSavedFilters();
+    },
+    onError: (error) => {
+      alert(`Error al guardar filtro: ${error.message}`);
+    }
+  });
+
+  const [deleteFilterMutation] = useMutation(DELETE_SAVED_FILTER, {
+    onCompleted: () => {
+      refetchSavedFilters();
+    },
+    onError: (error) => {
+      alert(`Error al eliminar filtro: ${error.message}`);
+    }
+  });
+
+  const [updateFilterNameMutation] = useMutation(UPDATE_SAVED_FILTER_NAME, {
+    onCompleted: () => {
+      setShowEditModal(false);
+      setEditingFilter(null);
+      setEditFilterName('');
+      refetchSavedFilters();
+    },
+    onError: (error) => {
+      alert(`Error al actualizar nombre: ${error.message}`);
+    }
+  });
+
+  // Funciones para manejar filtros guardados
+  const handleSaveFilter = () => {
+    if (!filterName.trim()) {
+      alert('Por favor ingresa un nombre para el filtro');
+      return;
+    }
+
+    saveFilterMutation({
+      variables: {
+        userId: currentUser?.id,
+        input: {
+          nombre: filterName.trim(),
+          filtros: {
+            ...(filters.categoria && { categoria: filters.categoria }),
+            ...(filters.fechaDesde && { fechaDesde: filters.fechaDesde }),
+            ...(filters.fechaHasta && { fechaHasta: filters.fechaHasta }),
+            ...(filters.eliminado !== null && { eliminado: filters.eliminado })
+          }
+        }
+      }
+    });
+  };
+
+  const handleLoadFilter = (savedFilter) => {
+    setFilters({
+      categoria: savedFilter.filtros.categoria || '',
+      fechaDesde: savedFilter.filtros.fechaDesde || '',
+      fechaHasta: savedFilter.filtros.fechaHasta || '',
+      eliminado: savedFilter.filtros.eliminado
+    });
+    setShowSavedFilters(false);
+    refetchReport();
+  };
+
+  const handleDeleteFilter = (filterId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este filtro?')) {
+      deleteFilterMutation({
+        variables: {
+          userId: currentUser?.id,
+          filterId
+        }
+      });
+    }
+  };
+
+  const handleEditFilter = (filter) => {
+    setEditingFilter(filter);
+    setEditFilterName(filter.nombre);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateFilterName = () => {
+    if (!editFilterName.trim()) {
+      alert('Por favor ingresa un nombre para el filtro');
+      return;
+    }
+
+    updateFilterNameMutation({
+      variables: {
+        userId: currentUser?.id,
+        filterId: editingFilter.id,
+        newName: editFilterName.trim()
+      }
+    });
+  };
 
   // Verificar permisos del usuario
   const hasPermissions = currentUser?.rol === 'PRESIDENTE' || currentUser?.rol === 'VOCAL';
@@ -251,7 +425,7 @@ const GraphQLDonationsExample = ({ currentUser }) => {
           </div>
 
           {/* Botones de acción */}
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button
               onClick={() => refetchReport()}
               style={{
@@ -286,9 +460,282 @@ const GraphQLDonationsExample = ({ currentUser }) => {
             >
               🗑️ Limpiar
             </button>
+            <button
+              onClick={() => setShowSaveModal(true)}
+              style={{
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              💾 Guardar Filtros
+            </button>
+            <button
+              onClick={() => setShowSavedFilters(!showSavedFilters)}
+              style={{
+                backgroundColor: '#17a2b8',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              📂 {showSavedFilters ? 'Ocultar' : 'Mostrar'} Filtros Guardados
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modal para guardar filtro */}
+      {showSaveModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            minWidth: '400px',
+            maxWidth: '500px'
+          }}>
+            <h4>💾 Guardar Filtros Actuales</h4>
+            <p>Dale un nombre a este conjunto de filtros:</p>
+            <input
+              type="text"
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+              placeholder="Ej: Ropa de este mes, Solo eliminados..."
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+                marginBottom: '20px'
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSaveFilter();
+                }
+              }}
+            />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowSaveModal(false);
+                  setFilterName('');
+                }}
+                style={{
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveFilter}
+                style={{
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                💾 Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para editar nombre de filtro */}
+      {showEditModal && editingFilter && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            minWidth: '400px',
+            maxWidth: '500px'
+          }}>
+            <h4>✏️ Editar Nombre del Filtro</h4>
+            <p>Editando: <strong>{editingFilter.nombre}</strong></p>
+            <p>Nuevo nombre:</p>
+            <input
+              type="text"
+              value={editFilterName}
+              onChange={(e) => setEditFilterName(e.target.value)}
+              placeholder="Nuevo nombre del filtro..."
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+                marginBottom: '20px'
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleUpdateFilterName();
+                }
+              }}
+            />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingFilter(null);
+                  setEditFilterName('');
+                }}
+                style={{
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleUpdateFilterName}
+                style={{
+                  backgroundColor: '#ffc107',
+                  color: 'black',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                ✏️ Actualizar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lista de filtros guardados */}
+      {showSavedFilters && (
+        <div style={{
+          backgroundColor: '#f8f9fa',
+          padding: '20px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          border: '1px solid #dee2e6'
+        }}>
+          <h4 style={{ marginTop: 0 }}>📂 Filtros Guardados</h4>
+          {savedFiltersLoading && <p>Cargando filtros guardados...</p>}
+          {savedFiltersError && <p style={{ color: 'red' }}>Error: {savedFiltersError.message}</p>}
+          {savedFiltersData?.savedFilters?.length === 0 && (
+            <p style={{ color: '#666' }}>No tienes filtros guardados aún. ¡Guarda algunos filtros para usarlos después!</p>
+          )}
+          {savedFiltersData?.savedFilters?.map(savedFilter => (
+            <div key={savedFilter.id} style={{
+              backgroundColor: 'white',
+              padding: '15px',
+              marginBottom: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ddd',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{ flex: 1 }}>
+                <strong>{savedFilter.nombre}</strong>
+                <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '5px' }}>
+                  {savedFilter.filtros.categoria && <span>📂 {savedFilter.filtros.categoria} </span>}
+                  {savedFilter.filtros.fechaDesde && <span>📅 Desde: {savedFilter.filtros.fechaDesde} </span>}
+                  {savedFilter.filtros.fechaHasta && <span>📅 Hasta: {savedFilter.filtros.fechaHasta} </span>}
+                  {savedFilter.filtros.eliminado !== null && (
+                    <span>{savedFilter.filtros.eliminado ? '🗑️ Solo eliminados' : '✅ Solo activos'}</span>
+                  )}
+                  {!savedFilter.filtros.categoria && !savedFilter.filtros.fechaDesde && 
+                   !savedFilter.filtros.fechaHasta && savedFilter.filtros.eliminado === null && (
+                    <span style={{ fontStyle: 'italic' }}>Sin filtros específicos</span>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '3px' }}>
+                  Creado: {new Date(savedFilter.fechaCreacion).toLocaleDateString()}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => handleLoadFilter(savedFilter)}
+                  style={{
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  🔄 Usar
+                </button>
+                <button
+                  onClick={() => handleEditFilter(savedFilter)}
+                  style={{
+                    backgroundColor: '#ffc107',
+                    color: 'black',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  ✏️ Editar
+                </button>
+                <button
+                  onClick={() => handleDeleteFilter(savedFilter.id)}
+                  style={{
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       
       {/* Estadísticas rápidas */}
       {statsData?.donationsStats && (
