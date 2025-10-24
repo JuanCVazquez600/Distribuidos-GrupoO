@@ -240,7 +240,7 @@ def crear_donacion():
     data = request.json
     donacion_request = inventario_pb2.DonacionRequest(
         id=data.get('id', 0),
-        categoria=data.get('categoria', 0),
+        categoria=int(data.get('categoria', 0)),
         descripcion=data.get('descripcion', ''),
         cantidad=data.get('cantidad', 0),
         eliminado=data.get('eliminado', False),
@@ -250,16 +250,19 @@ def crear_donacion():
     stub = inventario_pb2_grpc.InventarioServiceStub(channel)
     try:
         response = stub.AgregarDonacion(donacion_request)
-        return jsonify({'exito': response.exito, 'mensaje': response.mensaje})
+        result = {'exito': response.exito, 'mensaje': response.mensaje}
+        if not response.exito:
+            return jsonify(result), 400
+        return jsonify(result)
     except grpc.RpcError as e:
-        return jsonify({'exito': False, 'mensaje': str(e)})
+        return jsonify({'exito': False, 'mensaje': str(e)}), 500
 
 @app.route('/donaciones', methods=['PUT'])
 def modificar_donacion():
     data = request.json
     donacion_request = inventario_pb2.DonacionRequest(
         id=data.get('id', 0),
-        categoria=data.get('categoria', 0),
+        categoria=int(data.get('categoria', 0)),
         descripcion=data.get('descripcion', ''),
         cantidad=data.get('cantidad', 0),
         eliminado=data.get('eliminado', False),

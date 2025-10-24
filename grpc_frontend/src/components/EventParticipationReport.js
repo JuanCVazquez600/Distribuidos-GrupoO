@@ -103,6 +103,7 @@ const EventParticipationReport = ({ currentUser }) => {
         }));
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usersData, currentUser, filters.usuarioId]);
 
   // Query lazy para el reporte (se ejecuta manualmente)

@@ -130,6 +130,10 @@ public class InventarioServiceGrpcImpl extends InventarioServiceGrpc.InventarioS
         inventario.setDescripcion(proto.getDescripcion());
         inventario.setCantidad(proto.getCantidad());
         inventario.setEliminado(proto.getEliminado());
+        // Set fechaAlta if it's a new record (id == 0)
+        if (proto.getId() == 0) {
+            inventario.setFechaAlta(java.time.LocalDateTime.now());
+        }
         return inventario;
     }
 

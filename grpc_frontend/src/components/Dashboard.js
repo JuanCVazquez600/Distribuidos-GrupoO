@@ -896,7 +896,7 @@ const Dashboard = ({ currentUser, onLogout }) => {
                         >
                           #{d.id}
                         </td>
-                        <td style={{ fontWeight: "500" }}>{d.nombre}</td>
+                        <td style={{ fontWeight: "500" }}>{d.descripcion}</td>
                         <td>
                           <span className="category-tag">{d.categoria}</span>
                         </td>
@@ -907,10 +907,10 @@ const Dashboard = ({ currentUser, onLogout }) => {
                         <td>
                           <span
                             className={`status-badge ${
-                              d.activo ? "status-active" : "status-inactive"
+                              !d.eliminado ? "status-active" : "status-inactive"
                             }`}
                           >
-                            {d.activo ? "✓ Disponible" : "✗ No disponible"}
+                            {!d.eliminado ? "✓ Disponible" : "✗ No disponible"}
                           </span>
                         </td>
                         <td>
