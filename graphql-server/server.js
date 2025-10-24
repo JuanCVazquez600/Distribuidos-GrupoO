@@ -9,11 +9,17 @@ const dbConfig = {
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "root",
-  database: process.env.DB_NAME || "tp-distribuidos",
+  database: process.env.DB_NAME || "distribuidos-tp",
 };
 
 // Pool de conexiones
 const pool = mysql.createPool(dbConfig);
+
+// Función auxiliar para obtener el rol del usuario
+const getUserRole = async (userId) => {
+  const [rows] = await pool.execute('SELECT rol FROM usuario WHERE id = ?', [userId]);
+  return rows[0]?.rol;
+};
 
 // Schema GraphQL
 const typeDefs = gql`
@@ -600,7 +606,7 @@ const resolvers = {
           }
         }
 
-        subQuery += " GROUP BY e.id";
+        subQuery += " GROUP BY e.id, DATE_FORMAT(e.fecha_evento, '%Y-%m'), DATE_FORMAT(e.fecha_evento, '%Y-%m-%d'), e.nombre_evento, e.descripcion_evento";
 
         let query = `SELECT mes, dia, nombre_evento, descripcion_evento, donaciones FROM (${subQuery}) as sub ORDER BY mes DESC, dia DESC`;
 

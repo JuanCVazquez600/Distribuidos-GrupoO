@@ -5,7 +5,7 @@ import { useQuery, useLazyQuery, gql } from "@apollo/client";
 const GET_EVENT_PARTICIPATION_REPORT = gql`
   query GetEventParticipationReport(
     $userId: Int!
-    $filters: EventParticipationFilters
+    $filters: EventParticipationFilters!
   ) {
     eventParticipationReport(userId: $userId, filters: $filters) {
       participaciones {
@@ -34,6 +34,12 @@ const GET_USERS = gql`
 `;
 
 const EventParticipationReport = ({ currentUser }) => {
+  // Determinar si puede cambiar el filtro de usuario
+  const canChangeUserFilter = () => {
+    const userRole = currentUser?.rol?.toUpperCase();
+    return userRole === "PRESIDENTE" || userRole === "COORDINADOR";
+  };
+
   // Estado para los filtros
   const [filters, setFilters] = useState({
     usuarioId: currentUser?.id ? parseInt(currentUser.id) : "",
@@ -43,17 +49,21 @@ const EventParticipationReport = ({ currentUser }) => {
   });
 
   // Estado para lista de usuarios
-  const [availableUsers, setAvailableUsers] = useState([]);
-
-  // Determinar si puede cambiar el filtro de usuario
-  const canChangeUserFilter = () => {
-    const userRole = currentUser?.rol?.toUpperCase();
-    return userRole === "PRESIDENTE" || userRole === "COORDINADOR";
-  };
+  const [availableUsers, setAvailableUsers] = useState(
+    !canChangeUserFilter() && currentUser?.id ? [{
+      id: currentUser.id,
+      nombre: currentUser.nombre,
+      apellido: currentUser.apellido,
+      rol: currentUser.rol
+    }] : []
+  );
 
   // Query para obtener usuarios disponibles (solo si puede cambiar el filtro)
   const { data: usersData, loading: usersLoading } = useQuery(GET_USERS, {
     skip: !currentUser?.id || !canChangeUserFilter(),
+    onError: (error) => {
+      console.error("Error fetching users:", error);
+    },
   });
 
   // Efecto para cargar usuarios disponibles según permisos
@@ -78,6 +88,20 @@ const EventParticipationReport = ({ currentUser }) => {
           usuarioId: filteredUsers[0].id.toString(),
         }));
       }
+    } else if (!canChangeUserFilter() && currentUser?.id) {
+      // Si no puede cambiar el filtro y no hay datos de usuarios, usar el usuario actual
+      setAvailableUsers([{
+        id: currentUser.id,
+        nombre: currentUser.nombre,
+        apellido: currentUser.apellido,
+        rol: currentUser.rol
+      }]);
+      if (!filters.usuarioId) {
+        setFilters((prev) => ({
+          ...prev,
+          usuarioId: currentUser.id.toString(),
+        }));
+      }
     }
   }, [usersData, currentUser, filters.usuarioId]);
 
@@ -85,19 +109,7 @@ const EventParticipationReport = ({ currentUser }) => {
   const [
     getReport,
     { loading: reportLoading, error: reportError, data: reportData },
-  ] = useLazyQuery(GET_EVENT_PARTICIPATION_REPORT, {
-    variables: {
-      userId: currentUser?.id,
-      filters: {
-        usuarioId: parseInt(filters.usuarioId),
-        ...(filters.fechaDesde && { fechaDesde: filters.fechaDesde }),
-        ...(filters.fechaHasta && { fechaHasta: filters.fechaHasta }),
-        ...(filters.repartoDonaciones !== null && {
-          repartoDonaciones: filters.repartoDonaciones,
-        }),
-      },
-    },
-  });
+  ] = useLazyQuery(GET_EVENT_PARTICIPATION_REPORT);
 
   // Verificar que el usuario esté logueado
   if (!currentUser || !currentUser.id) {
