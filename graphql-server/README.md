@@ -2,14 +2,14 @@
 
 Microservicio GraphQL para reportes de donaciones del sistema de gestión solidaria.
 
-## 📋 Prerequisitos
+##  Prerequisitos
 
 - **Node.js** >= 16.0.0
 - **npm** >= 8.0.0
 - **MySQL** >= 8.0
 - Base de datos `tp-distribuidos` configurada y funcionando
 
-## 🚀 Instalación y Configuración
+##  Instalación y Configuración
 
 ### 1. Clonar el repositorio
 ```bash
@@ -55,7 +55,7 @@ El servidor estará disponible en:
 - **GraphQL API**: http://localhost:4000/graphql
 - **GraphQL Playground**: http://localhost:4000/graphql
 
-## 🔧 Uso
+##  Uso
 
 ### Permisos
 Solo usuarios con rol `PRESIDENTE` o `VOCAL` pueden acceder a los reportes.
@@ -106,7 +106,7 @@ En GraphQL Playground o cliente, incluir:
 }
 ```
 
-## 🗂️ Estructura del proyecto
+##  Estructura del proyecto
 
 ```
 graphql-server/
@@ -116,7 +116,7 @@ graphql-server/
 └── README.md         # Este archivo
 ```
 
-## 🔗 Integración con Frontend
+##  Integración con Frontend
 
 Este servidor se conecta automáticamente con el frontend React a través de Apollo Client. Asegúrate de que ambos estén ejecutándose:
 
@@ -124,7 +124,7 @@ Este servidor se conecta automáticamente con el frontend React a través de Apo
 - GraphQL Server: http://localhost:4000
 - Backend SpringBoot: http://localhost:8080
 
-## 🛠️ Troubleshooting
+##  Troubleshooting
 
 ### Error de conexión a base de datos
 ```
@@ -147,7 +147,7 @@ Error: Sin permisos para acceder a estadísticas
 - Verificar que el usuario tenga rol `PRESIDENTE` o `VOCAL`
 - Confirmar que el `userid` en headers sea correcto
 
-## 📦 Dependencias principales
+##  Dependencias principales
 
 - `apollo-server-express`: Servidor GraphQL
 - `express`: Framework web
