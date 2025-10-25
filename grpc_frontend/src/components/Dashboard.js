@@ -11,6 +11,7 @@ import TransferForm from "./TransferForm";
 import SoapQuery from "./SoapQuery";
 import GraphQLDonationsExample from "./GraphQLDonationsExample";
 import EventParticipationReport from "./EventParticipationReport";
+import ExcelReportDownloader from "./ExcelReportDownloader";
 
 const Dashboard = ({ currentUser, onLogout }) => {
   const [usuarios, setUsuarios] = useState([]);
@@ -464,9 +465,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
         <div className="tabs">
           {hasPermission("manage_users") && (
             <button
-              className={`tab-button ${
-                activeTab === "usuarios" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "usuarios" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("usuarios")}
             >
               👥 Usuarios ({usuarios.length})
@@ -474,9 +474,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
           )}
           {hasPermission("view_events") && (
             <button
-              className={`tab-button ${
-                activeTab === "eventos" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "eventos" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("eventos")}
             >
               📅 Eventos ({eventos.length})
@@ -484,9 +483,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
           )}
           {hasPermission("manage_inventory") && (
             <button
-              className={`tab-button ${
-                activeTab === "donaciones" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "donaciones" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("donaciones")}
             >
               📦 Donaciones ({donaciones.length})
@@ -494,9 +492,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
           )}
           {hasPermission("manage_requests") && (
             <button
-              className={`tab-button ${
-                activeTab === "solicitudes" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "solicitudes" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("solicitudes")}
             >
               📋 Solicitudes ({solicitudes.length})
@@ -504,9 +501,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
           )}
           {hasPermission("manage_offers") && (
             <button
-              className={`tab-button ${
-                activeTab === "ofertas" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "ofertas" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("ofertas")}
             >
               🎁 Ofertas ({ofertas.length})
@@ -514,9 +510,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
           )}
           {hasPermission("manage_transfers") && (
             <button
-              className={`tab-button ${
-                activeTab === "transferencias" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "transferencias" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("transferencias")}
             >
               🔄 Transferencias ({transferencias.length})
@@ -524,9 +519,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
           )}
           {hasPermission("manage_external_events") && (
             <button
-              className={`tab-button ${
-                activeTab === "eventos-externos" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "eventos-externos" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("eventos-externos")}
             >
               🌍 Eventos Externos ({eventosExternos.length})
@@ -536,23 +530,32 @@ const Dashboard = ({ currentUser, onLogout }) => {
             currentUser.rol &&
             currentUser.rol.toUpperCase() === "PRESIDENTE" && (
               <button
-                className={`tab-button ${
-                  activeTab === "soap-query" ? "active" : ""
-                }`}
+                className={`tab-button ${activeTab === "soap-query" ? "active" : ""
+                  }`}
                 onClick={() => setActiveTab("soap-query")}
               >
                 🧼 SOAP Query
               </button>
             )}
 
+          {/* Pestaña Participación en Eventos - Para todos los roles */}
+          {hasPermission("view_all") && (
+            <button
+              className={`tab-button ${activeTab === "event-participation" ? "active" : ""
+                }`}
+              onClick={() => setActiveTab("event-participation")}
+            >
+              📅 Participación en Eventos
+            </button>
+          )}
+
           {/* Pestaña GraphQL - Solo para PRESIDENTE y VOCAL */}
           {currentUser.rol &&
-            (currentUser.rol.toUpperCase() === "PRESIDENTE" || 
-             currentUser.rol.toUpperCase() === "VOCAL") && (
+            (currentUser.rol.toUpperCase() === "PRESIDENTE" ||
+              currentUser.rol.toUpperCase() === "VOCAL") && (
               <button
-                className={`tab-button ${
-                  activeTab === "graphql-reports" ? "active" : ""
-                }`}
+                className={`tab-button ${activeTab === "graphql-reports" ? "active" : ""
+                  }`}
                 onClick={() => setActiveTab("graphql-reports")}
               >
                 📊 GraphQL Reports
@@ -637,9 +640,8 @@ const Dashboard = ({ currentUser, onLogout }) => {
                         </td>
                         <td>
                           <span
-                            className={`status-badge ${
-                              u.activo ? "status-active" : "status-inactive"
-                            }`}
+                            className={`status-badge ${u.activo ? "status-active" : "status-inactive"
+                              }`}
                           >
                             {u.activo ? "✓ Activo" : "✗ Inactivo"}
                           </span>
@@ -809,7 +811,7 @@ const Dashboard = ({ currentUser, onLogout }) => {
                                 onClick={() => handleJoinLeaveEvent(e)}
                               >
                                 {e.miembros &&
-                                e.miembros.some((m) => m.id === currentUser.id)
+                                  e.miembros.some((m) => m.id === currentUser.id)
                                   ? "🚪 Abandonar"
                                   : "➕ Unirse"}
                               </button>
@@ -854,7 +856,21 @@ const Dashboard = ({ currentUser, onLogout }) => {
                   ➕ Nueva Donación
                 </button>
               </div>
+              {/* Excel Report Downloader Section */}
 
+              {(currentUser.rol &&
+
+
+                (currentUser.rol.toUpperCase() === "PRESIDENTE" ||
+
+
+                  currentUser.rol.toUpperCase() === "VOCAL")) && (
+
+
+                  <ExcelReportDownloader currentUser={currentUser} />
+
+
+                )}
               <div
                 style={{
                   overflowX: "auto",
@@ -884,7 +900,7 @@ const Dashboard = ({ currentUser, onLogout }) => {
                         >
                           #{d.id}
                         </td>
-                        <td style={{ fontWeight: "500" }}>{d.nombre}</td>
+                        <td style={{ fontWeight: "500" }}>{d.descripcion}</td>
                         <td>
                           <span className="category-tag">{d.categoria}</span>
                         </td>
@@ -894,11 +910,10 @@ const Dashboard = ({ currentUser, onLogout }) => {
                         </td>
                         <td>
                           <span
-                            className={`status-badge ${
-                              d.activo ? "status-active" : "status-inactive"
-                            }`}
+                            className={`status-badge ${!d.eliminado ? "status-active" : "status-inactive"
+                              }`}
                           >
-                            {d.activo ? "✓ Disponible" : "✗ No disponible"}
+                            {!d.eliminado ? "✓ Disponible" : "✗ No disponible"}
                           </span>
                         </td>
                         <td>
@@ -1250,11 +1265,10 @@ const Dashboard = ({ currentUser, onLogout }) => {
                           </td>
                           <td>
                             <span
-                              className={`status-badge ${
-                                t.status === "COMPLETED"
-                                  ? "status-active"
-                                  : "status-inactive"
-                              }`}
+                              className={`status-badge ${t.status === "COMPLETED"
+                                ? "status-active"
+                                : "status-inactive"
+                                }`}
                             >
                               {t.status || "PENDING"}
                             </span>
@@ -1310,9 +1324,17 @@ const Dashboard = ({ currentUser, onLogout }) => {
               </div>
             )}
 
-          {activeTab === "soap-query" && <SoapQuery currentUser={currentUser} />}
-          
-          {activeTab === "graphql-reports" && <GraphQLDonationsExample currentUser={currentUser} />}
+          {activeTab === "soap-query" && (
+            <SoapQuery currentUser={currentUser} />
+          )}
+
+          {activeTab === "event-participation" && (
+            <EventParticipationReport currentUser={currentUser} />
+          )}
+
+          {activeTab === "graphql-reports" && (
+            <GraphQLDonationsExample currentUser={currentUser} />
+          )}
         </div>
       </div>
 
