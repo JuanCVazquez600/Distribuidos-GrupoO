@@ -10,7 +10,7 @@ import ExternalEventsList from "./ExternalEventsList";
 import TransferForm from "./TransferForm";
 import SoapQuery from "./SoapQuery";
 import GraphQLDonationsExample from "./GraphQLDonationsExample";
-import ExcelReportDownloader from "./ExcelReportDownloader";
+import EventParticipationReport from "./EventParticipationReport";
 
 const Dashboard = ({ currentUser, onLogout }) => {
   const [usuarios, setUsuarios] = useState([]);
@@ -854,13 +854,6 @@ const Dashboard = ({ currentUser, onLogout }) => {
                   ➕ Nueva Donación
                 </button>
               </div>
-
-              {/* Excel Report Downloader Section */}
-              {(currentUser.rol && 
-                (currentUser.rol.toUpperCase() === "PRESIDENTE" || 
-                 currentUser.rol.toUpperCase() === "VOCAL")) && (
-                <ExcelReportDownloader currentUser={currentUser} />
-              )}
 
               <div
                 style={{
