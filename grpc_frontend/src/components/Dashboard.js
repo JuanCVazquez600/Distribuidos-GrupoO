@@ -545,22 +545,10 @@ const Dashboard = ({ currentUser, onLogout }) => {
               </button>
             )}
 
-          {/* Pestaña Participación en Eventos - Para todos los roles */}
-          {hasPermission("view_all") && (
-            <button
-              className={`tab-button ${
-                activeTab === "event-participation" ? "active" : ""
-              }`}
-              onClick={() => setActiveTab("event-participation")}
-            >
-              📅 Participación en Eventos
-            </button>
-          )}
-
           {/* Pestaña GraphQL - Solo para PRESIDENTE y VOCAL */}
           {currentUser.rol &&
-            (currentUser.rol.toUpperCase() === "PRESIDENTE" ||
-              currentUser.rol.toUpperCase() === "VOCAL") && (
+            (currentUser.rol.toUpperCase() === "PRESIDENTE" || 
+             currentUser.rol.toUpperCase() === "VOCAL") && (
               <button
                 className={`tab-button ${
                   activeTab === "graphql-reports" ? "active" : ""
@@ -896,7 +884,7 @@ const Dashboard = ({ currentUser, onLogout }) => {
                         >
                           #{d.id}
                         </td>
-                        <td style={{ fontWeight: "500" }}>{d.descripcion}</td>
+                        <td style={{ fontWeight: "500" }}>{d.nombre}</td>
                         <td>
                           <span className="category-tag">{d.categoria}</span>
                         </td>
@@ -907,10 +895,10 @@ const Dashboard = ({ currentUser, onLogout }) => {
                         <td>
                           <span
                             className={`status-badge ${
-                              !d.eliminado ? "status-active" : "status-inactive"
+                              d.activo ? "status-active" : "status-inactive"
                             }`}
                           >
-                            {!d.eliminado ? "✓ Disponible" : "✗ No disponible"}
+                            {d.activo ? "✓ Disponible" : "✗ No disponible"}
                           </span>
                         </td>
                         <td>
@@ -1322,17 +1310,9 @@ const Dashboard = ({ currentUser, onLogout }) => {
               </div>
             )}
 
-          {activeTab === "soap-query" && (
-            <SoapQuery currentUser={currentUser} />
-          )}
-
-          {activeTab === "event-participation" && (
-            <EventParticipationReport currentUser={currentUser} />
-          )}
-
-          {activeTab === "graphql-reports" && (
-            <GraphQLDonationsExample currentUser={currentUser} />
-          )}
+          {activeTab === "soap-query" && <SoapQuery currentUser={currentUser} />}
+          
+          {activeTab === "graphql-reports" && <GraphQLDonationsExample currentUser={currentUser} />}
         </div>
       </div>
 
