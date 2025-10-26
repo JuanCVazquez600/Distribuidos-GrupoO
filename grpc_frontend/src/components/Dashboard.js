@@ -12,6 +12,7 @@ import SoapQuery from "./SoapQuery";
 import GraphQLDonationsExample from "./GraphQLDonationsExample";
 import EventParticipationReport from "./EventParticipationReport";
 import ExcelReportDownloader from "./ExcelReportDownloader";
+import EventFilterManager from "./EventFilterManager";
 
 const Dashboard = ({ currentUser, onLogout }) => {
   const [usuarios, setUsuarios] = useState([]);
@@ -546,6 +547,17 @@ const Dashboard = ({ currentUser, onLogout }) => {
               onClick={() => setActiveTab("event-participation")}
             >
               📅 Participación en Eventos
+            </button>
+          )}
+
+          {/* Pestaña Gestión de Filtros de Eventos - Para todos los roles */}
+          {hasPermission("view_all") && (
+            <button
+              className={`tab-button ${activeTab === "event-filters" ? "active" : ""
+                }`}
+              onClick={() => setActiveTab("event-filters")}
+            >
+              🎯 Filtros de Eventos
             </button>
           )}
 
@@ -1330,6 +1342,10 @@ const Dashboard = ({ currentUser, onLogout }) => {
 
           {activeTab === "event-participation" && (
             <EventParticipationReport currentUser={currentUser} />
+          )}
+
+          {activeTab === "event-filters" && (
+            <EventFilterManager currentUser={currentUser} />
           )}
 
           {activeTab === "graphql-reports" && (
