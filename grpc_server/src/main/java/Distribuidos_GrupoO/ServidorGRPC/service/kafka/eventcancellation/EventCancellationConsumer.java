@@ -44,11 +44,11 @@ public class EventCancellationConsumer {
 
     private void processEventCancellation(EventCancellation eventCancellation) {
         try {
-            System.out.println("🔄 Procesando cancelación de evento con mapper...");
+            System.out.println("Procesando cancelacion de evento con mapper...");
             
             // Validar cancellation antes de procesar
             if (EventCancellationMapper.shouldDiscard(eventCancellation)) {
-                System.err.println("❌ Cancelación inválida, descartando: " + eventCancellation);
+                System.err.println("Cancelacion invalida, descartando: " + eventCancellation);
                 return;
             }
             
@@ -77,14 +77,14 @@ public class EventCancellationConsumer {
             removerDeEventosExternos(eventCancellation);
             
         } catch (Exception e) {
-            System.err.println("❌ Error al procesar cancelación: " + e.getMessage());
+            System.err.println("Error al procesar cancelacion: " + e.getMessage());
             // Crear registro de error usando mapper
             EventoBaja errorBaja = EventCancellationMapper.toEntityWithError(eventCancellation, e.getMessage());
             try {
                 eventoBajaRepository.save(errorBaja);
-                System.out.println("💾 Error persistido en BD para auditoría");
+                System.out.println("Error persistido en BD para auditoria");
             } catch (Exception persistError) {
-                System.err.println("❌ Error crítico al persistir error: " + persistError.getMessage());
+            System.err.println("Error critico al persistir error: " + persistError.getMessage());
             }
         }
     }
@@ -93,11 +93,11 @@ public class EventCancellationConsumer {
         try {
             Integer eventIdInt = Integer.parseInt(eventId);
             EventoSolidario evento = eventoService.buscarPorId(eventIdInt);
-            System.out.println("⚠️ IMPORTANTE: Evento externo encontrado en nuestra BD: " + evento.getNombreEvento());
+            System.out.println("IMPORTANTE: Evento externo encontrado en nuestra BD: " + evento.getNombreEvento());
             return true;
         } catch (RuntimeException e) {
             if (e.getMessage().contains("Evento no encontrado")) {
-                System.out.println("✅ Evento externo no encontrado en nuestra BD (comportamiento normal)");
+                System.out.println("Evento externo no encontrado en nuestra BD (comportamiento normal)");
                 return false;
             } else {
                 System.err.println("Error al verificar evento en BD: " + e.getMessage());
@@ -111,7 +111,7 @@ public class EventCancellationConsumer {
             Integer eventIdInt = Integer.parseInt(eventId);
             EventoSolidario evento = eventoService.buscarPorId(eventIdInt);
             eventoService.eliminarEvento(eventIdInt);
-            System.out.println("✅ Evento eliminado de nuestro sistema por sincronización automática");
+            System.out.println("Evento eliminado de nuestro sistema por sincronizacion automatica");
             eventoBaja.setObservaciones("Evento encontrado y ELIMINADO de BD local: " + evento.getNombreEvento());
         } catch (Exception e) {
             System.err.println("Error al eliminar evento local: " + e.getMessage());
@@ -123,11 +123,11 @@ public class EventCancellationConsumer {
     private void persistirBajaConMapper(EventoBaja eventoBaja) {
         try {
             EventoBaja bajaGuardada = eventoBajaRepository.save(eventoBaja);
-            System.out.println("💾 Baja de evento persistida en BD con ID: " + bajaGuardada.getId());
-            System.out.println("📋 Estado: " + bajaGuardada.getEstado());
-            System.out.println("📝 Observaciones: " + bajaGuardada.getObservaciones());
+            System.out.println("Baja de evento persistida en BD con ID: " + bajaGuardada.getId());
+            System.out.println("Estado: " + bajaGuardada.getEstado());
+            System.out.println("Observaciones: " + bajaGuardada.getObservaciones());
         } catch (Exception e) {
-            System.err.println("❌ Error al persistir baja de evento en BD: " + e.getMessage());
+            System.err.println("Error al persistir baja de evento en BD: " + e.getMessage());
             throw e;
         }
     }
@@ -146,10 +146,10 @@ public class EventCancellationConsumer {
             // Notificar a componentes del sistema
             notifySystemComponents(organizationId, eventId);
             
-            System.out.println("✅ Actualizaciones del sistema completadas para evento: " + eventId);
+            System.out.println("Actualizaciones del sistema completadas para evento: " + eventId);
             
         } catch (Exception e) {
-            System.err.println("❌ Error al procesar actualizaciones del sistema: " + e.getMessage());
+            System.err.println("Error al procesar actualizaciones del sistema: " + e.getMessage());
         }
     }
     
@@ -157,7 +157,7 @@ public class EventCancellationConsumer {
         try {
             // ACTUALIZACIÓN: Remover el evento del cache de eventos externos
             // Esto asegura que no aparezca más en consultas de eventos disponibles
-            System.out.println("🗑️  Removiendo evento del cache de eventos externos");
+            System.out.println("Removiendo evento del cache de eventos externos");
             
             // Aquí podrías integrar con solidaryEventConsumer para remover el evento
             // de la lista de eventos externos disponibles
@@ -174,7 +174,7 @@ public class EventCancellationConsumer {
             String logEntry = String.format("[%s] BAJA_EVENTO_EXTERNO: Org=%s, EventId=%s, ExistiaEnBD=%s", 
                                            timestamp, organizationId, eventId, existiaEnNuestraBD);
             
-            System.out.println("📝 LOG_AUDITORIA: " + logEntry);
+            System.out.println("LOG_AUDITORIA: " + logEntry);
             
             // Aquí podrías guardar en una tabla de auditoria en la BD
             // auditoriaService.registrarBajaEventoExterno(organizationId, eventId, existiaEnNuestraBD);
@@ -187,7 +187,7 @@ public class EventCancellationConsumer {
     private void notifySystemComponents(String organizationId, String eventId) {
         try {
             // ACTUALIZACIÓN: Notificar a otros componentes del sistema
-            System.out.println("📢 Notificando a componentes del sistema sobre baja de evento");
+            System.out.println("Notificando a componentes del sistema sobre baja de evento");
             
             // Ejemplos de notificaciones:
             // 1. Actualizar caches de eventos

@@ -926,10 +926,10 @@ async function startServer() {
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
     console.log(
-      `🚀 GraphQL Server running at http://localhost:${PORT}${server.graphqlPath}`
+      `GraphQL Server running at http://localhost:${PORT}${server.graphqlPath}`
     );
     console.log(
-      `🎮 GraphQL Playground: http://localhost:${PORT}${server.graphqlPath}`
+      `GraphQL Playground: http://localhost:${PORT}${server.graphqlPath}`
     );
   });
 }

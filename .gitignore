@@ -8,7 +8,11 @@ yarn-error.log*
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 *.so
+
+# Kafka directory
+kafka/
 
 # Environment files
 .env
