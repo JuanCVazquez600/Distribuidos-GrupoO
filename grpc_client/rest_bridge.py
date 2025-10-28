@@ -10,9 +10,22 @@ CORS(app)
 
 SPRING_BOOT_URL = 'http://localhost:8080'
 
-def grpc_login(usuario_email, clave):
+#funcion reutilizable grpc stub helper
+def create_grpc_stub(service_type):
+    """Factory para crear stubs gRPC reutilizables"""
     channel = grpc.insecure_channel('localhost:9090')
-    stub = usuarios_pb2_grpc.UsuarioServiceStub(channel)
+    
+    if service_type == 'usuario':
+        return usuarios_pb2_grpc.UsuarioServiceStub(channel)
+    elif service_type == 'evento':
+        return eventos_pb2_grpc.EventoServiceStub(channel)
+    elif service_type == 'inventario':
+        return inventario_pb2_grpc.InventarioServiceStub(channel)
+    else:
+        raise ValueError(f"Tipo de servicio no soportado: {service_type}")
+
+def grpc_login(usuario_email, clave):
+    stub = create_grpc_stub('usuario')
     request_proto = usuarios_pb2.LoginRequest(
         usuarioEmail=usuario_email,
         clave=clave
@@ -40,8 +53,7 @@ def grpc_login(usuario_email, clave):
         return {'exito': False, 'mensaje': str(e), 'usuario': None}
 
 def grpc_crear_evento(nombre, descripcion, fecha_hora, user_id=0):
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = eventos_pb2_grpc.EventoServiceStub(channel)
+    stub = create_grpc_stub('evento')
     request_proto = eventos_pb2.EventoRequest(
         nombre=nombre,
         descripcion=descripcion,
@@ -66,8 +78,7 @@ def login():
 
 @app.route('/usuarios', methods=['GET'])
 def usuarios():
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = usuarios_pb2_grpc.UsuarioServiceStub(channel)
+    stub = create_grpc_stub('usuario')
     try:
         response = stub.ListarUsuarios(usuarios_pb2.Empty())
         usuarios_list = []
@@ -91,8 +102,7 @@ def usuarios():
 
 @app.route('/eventos', methods=['GET'])
 def eventos():
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = eventos_pb2_grpc.EventoServiceStub(channel)
+    stub = create_grpc_stub('evento')
     try:
         response = stub.ListarEventos(eventos_pb2.Empty())
         eventos_list = []
@@ -124,8 +134,7 @@ def crear_evento():
 
 @app.route('/donaciones', methods=['GET'])
 def donaciones():
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = inventario_pb2_grpc.InventarioServiceStub(channel)
+    stub = create_grpc_stub('inventario')
     try:
         response = stub.ListarDonaciones(inventario_pb2.Empty())
         donaciones_list = []
@@ -158,8 +167,7 @@ def crear_usuario():
         activo=data.get('activo', True),
         userId=data.get('userId', 0)
     )
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = usuarios_pb2_grpc.UsuarioServiceStub(channel)
+    stub = create_grpc_stub('usuario')
     try:
         response = stub.CrearUsuario(usuario_request)
         return jsonify({'exito': response.exito, 'mensaje': response.mensaje})
@@ -181,8 +189,7 @@ def modificar_usuario():
         activo=data.get('activo', True),
         userId=data.get('userId', 0)
     )
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = usuarios_pb2_grpc.UsuarioServiceStub(channel)
+    stub = create_grpc_stub('usuario')
     try:
         response = stub.ModificarUsuario(usuario_request)
         return jsonify({'exito': response.exito, 'mensaje': response.mensaje})
@@ -192,8 +199,7 @@ def modificar_usuario():
 @app.route('/usuarios/<int:id>', methods=['DELETE'])
 def baja_usuario(id):
     data = request.json or {}
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = usuarios_pb2_grpc.UsuarioServiceStub(channel)
+    stub = create_grpc_stub('usuario')
     usuario_id_request = usuarios_pb2.UsuarioIdRequest(id=id, userId=data.get('userId', 0))
     try:
         response = stub.BajaUsuario(usuario_id_request)
@@ -215,8 +221,7 @@ def modificar_evento():
         miembros=miembros,
         userId=data.get('userId', 0)
     )
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = eventos_pb2_grpc.EventoServiceStub(channel)
+    stub = create_grpc_stub('evento')
     try:
         response = stub.ModificarEvento(evento_request)
         return jsonify({'exito': response.exito, 'mensaje': response.mensaje})
@@ -226,8 +231,7 @@ def modificar_evento():
 @app.route('/eventos/<int:id>', methods=['DELETE'])
 def baja_evento(id):
     data = request.json or {}
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = eventos_pb2_grpc.EventoServiceStub(channel)
+    stub = create_grpc_stub('evento')
     evento_id_request = eventos_pb2.EventoIdRequest(id=id, userId=data.get('userId', 0))
     try:
         response = stub.BajaEvento(evento_id_request)
@@ -246,8 +250,7 @@ def crear_donacion():
         eliminado=data.get('eliminado', False),
         userId=data.get('userId', 0)
     )
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = inventario_pb2_grpc.InventarioServiceStub(channel)
+    stub = create_grpc_stub('inventario')
     try:
         response = stub.AgregarDonacion(donacion_request)
         result = {'exito': response.exito, 'mensaje': response.mensaje}
@@ -268,8 +271,7 @@ def modificar_donacion():
         eliminado=data.get('eliminado', False),
         userId=data.get('userId', 0)
     )
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = inventario_pb2_grpc.InventarioServiceStub(channel)
+    stub = create_grpc_stub('inventario')
     try:
         response = stub.ModificarDonacion(donacion_request)
         return jsonify({'exito': response.exito, 'mensaje': response.mensaje})
@@ -279,8 +281,7 @@ def modificar_donacion():
 @app.route('/donaciones/<int:id>', methods=['DELETE'])
 def baja_donacion(id):
     data = request.json or {}
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = inventario_pb2_grpc.InventarioServiceStub(channel)
+    stub = create_grpc_stub('inventario')
     donacion_id_request = inventario_pb2.DonacionIdRequest(id=id, userId=data.get('userId', 0))
     try:
         response = stub.BajaDonacion(donacion_id_request)
@@ -291,8 +292,7 @@ def baja_donacion(id):
 @app.route('/eventos/<int:evento_id>/miembros/<int:miembro_id>', methods=['POST'])
 def asignar_miembro(evento_id, miembro_id):
     data = request.json or {}
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = eventos_pb2_grpc.EventoServiceStub(channel)
+    stub = create_grpc_stub('evento')
     asignar_request = eventos_pb2.AsignarMiembroRequest(
         eventoId=evento_id,
         miembroId=miembro_id,
@@ -307,8 +307,7 @@ def asignar_miembro(evento_id, miembro_id):
 @app.route('/eventos/<int:evento_id>/miembros/<int:miembro_id>', methods=['DELETE'])
 def quitar_miembro(evento_id, miembro_id):
     data = request.json or {}
-    channel = grpc.insecure_channel('localhost:9090')
-    stub = eventos_pb2_grpc.EventoServiceStub(channel)
+    stub = create_grpc_stub('evento')
     quitar_request = eventos_pb2.QuitarMiembroRequest(
         eventoId=evento_id,
         miembroId=miembro_id,
