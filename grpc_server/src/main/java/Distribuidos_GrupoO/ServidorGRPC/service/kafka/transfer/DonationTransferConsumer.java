@@ -2,6 +2,7 @@ package Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer;
 
 import Distribuidos_GrupoO.ServidorGRPC.service.IInventarioDeDonacionesService;
 import Distribuidos_GrupoO.ServidorGRPC.model.InventarioDeDonaciones;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -24,7 +25,7 @@ public class DonationTransferConsumer {
     public void listen(DonationTransfer transfer) {
         try {
             System.out.println("Procesando transferencia para nuestra organización: " + organizationId);
-            for (DonationTransfer.DonationItem item : transfer.getDonations()) {
+            for (DonationItem item : transfer.getDonations()) {
                 InventarioDeDonaciones.CategoriaEnum categoria;
                 try {
                     categoria = InventarioDeDonaciones.CategoriaEnum.valueOf(item.getCategory());

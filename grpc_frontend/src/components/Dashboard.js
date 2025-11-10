@@ -20,6 +20,7 @@ const Dashboard = ({ currentUser, onLogout }) => {
   const [donaciones, setDonaciones] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
   const [ofertas, setOfertas] = useState([]);
+  const [solicitudesOfertas, setSolicitudesOfertas] = useState([]);
   const [transferencias, setTransferencias] = useState([]);
   const [eventosExternos, setEventosExternos] = useState([]);
   const [activeTab, setActiveTab] = useState(() => {
@@ -55,6 +56,7 @@ const Dashboard = ({ currentUser, onLogout }) => {
         fetchDonaciones(),
         fetchSolicitudes(),
         fetchOfertas(),
+        fetchSolicitudesOfertas(),
         fetchTransferencias(),
         fetchEventosExternos(),
       ]);
@@ -105,6 +107,15 @@ const Dashboard = ({ currentUser, onLogout }) => {
       setOfertas(response.data);
     } catch (error) {
       console.error("Error fetching ofertas:", error);
+    }
+  };
+
+  const fetchSolicitudesOfertas = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/offers-request/valid");
+      setSolicitudesOfertas(response.data);
+    } catch (error) {
+      console.error("Error fetching solicitudes de ofertas:", error);
     }
   };
 
@@ -507,6 +518,15 @@ const Dashboard = ({ currentUser, onLogout }) => {
               onClick={() => setActiveTab("ofertas")}
             >
               🎁 Ofertas ({ofertas.length})
+            </button>
+          )}
+          {hasPermission("manage_offers") && (
+            <button
+              className={`tab-button ${activeTab === "solicitudes-ofertas" ? "active" : ""
+                }`}
+              onClick={() => setActiveTab("solicitudes-ofertas")}
+            >
+              📨 Solicitudes Ofertas ({solicitudesOfertas.length})
             </button>
           )}
           {hasPermission("manage_transfers") && (
@@ -1168,6 +1188,181 @@ const Dashboard = ({ currentUser, onLogout }) => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "solicitudes-ofertas" && hasPermission("manage_offers") && (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "var(--spacing-lg)",
+                  flexWrap: "wrap",
+                  gap: "var(--spacing-md)",
+                }}
+              >
+                <h2 style={{ margin: 0, color: "var(--text-primary)" }}>
+                  📨 Solicitudes de Ofertas Recibidas
+                </h2>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => fetchSolicitudesOfertas()}
+                >
+                  🔄 Actualizar
+                </button>
+              </div>
+
+              <div
+                style={{
+                  overflowX: "auto",
+                  borderRadius: "var(--border-radius-md)",
+                }}
+              >
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>ID Oferta</th>
+                      <th>🏢 Organización Solicitante</th>
+                      <th>🎁 Donaciones Solicitadas</th>
+                      <th>📝 Detalles</th>
+                      <th>🕒 Fecha</th>
+                      <th>⚙️ Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {solicitudesOfertas.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: "center", padding: "var(--spacing-xl)" }}>
+                          📭 No hay solicitudes de ofertas válidas recibidas
+                        </td>
+                      </tr>
+                    ) : (
+                      solicitudesOfertas.map((solicitud, index) => (
+                        <tr key={`${solicitud.offerId}-${solicitud.requestOrgId}-${index}`}>
+                          <td
+                            style={{
+                              fontWeight: "bold",
+                              color: "var(--primary-color)",
+                            }}
+                          >
+                            {solicitud.offerId}
+                          </td>
+                          <td>{solicitud.requestOrgId}</td>
+                          <td>
+                            <div style={{ maxWidth: "200px" }}>
+                              {solicitud.donations?.map((item, i) => (
+                                <div key={i} style={{ 
+                                  fontSize: "0.9em", 
+                                  marginBottom: "4px",
+                                  padding: "2px 6px",
+                                  backgroundColor: "var(--background-secondary)",
+                                  borderRadius: "4px"
+                                }}>
+                                  <strong>{item.category}</strong>: {item.description} ({item.quantity})
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                          <td>
+                            <small>
+                              Items: {solicitud.donations?.length || 0}
+                            </small>
+                          </td>
+                          <td>
+                            <small>Recibida</small>
+                          </td>
+                          <td>
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <button
+                                className="btn btn-sm btn-success"
+                                onClick={() => {
+                                  alert(`Aprobar solicitud de ${solicitud.requestOrgId} para oferta ${solicitud.offerId}`);
+                                }}
+                                title="Aprobar solicitud"
+                              >
+                                ✅
+                              </button>
+                              <button
+                                className="btn btn-sm btn-danger"
+                                onClick={() => {
+                                  alert(`Rechazar solicitud de ${solicitud.requestOrgId} para oferta ${solicitud.offerId}`);
+                                }}
+                                title="Rechazar solicitud"
+                              >
+                                ❌
+                              </button>
+                              <button
+                                className="btn btn-sm btn-info"
+                                onClick={() => {
+                                  alert(`Ver detalles completos:\n\nID Oferta: ${solicitud.offerId}\nOrganización Solicitante: ${solicitud.requestOrgId}\nDonaciones: ${JSON.stringify(solicitud.donations, null, 2)}`);
+                                }}
+                                title="Ver detalles"
+                              >
+                                👁️
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={{ marginTop: "var(--spacing-lg)" }}>
+                <h3>📊 Estadísticas</h3>
+                <div style={{ 
+                  display: "grid", 
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
+                  gap: "var(--spacing-md)",
+                  marginTop: "var(--spacing-md)"
+                }}>
+                  <div style={{
+                    padding: "var(--spacing-md)",
+                    backgroundColor: "var(--background-secondary)",
+                    borderRadius: "var(--border-radius-md)",
+                    textAlign: "center"
+                  }}>
+                    <div style={{ fontSize: "2em", marginBottom: "8px" }}>📨</div>
+                    <div style={{ fontWeight: "bold", fontSize: "1.2em" }}>
+                      {solicitudesOfertas.length}
+                    </div>
+                    <div style={{ color: "var(--text-secondary)" }}>
+                      Solicitudes Válidas
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: "var(--spacing-md)",
+                    backgroundColor: "var(--background-secondary)",
+                    borderRadius: "var(--border-radius-md)",
+                    textAlign: "center"
+                  }}>
+                    <div style={{ fontSize: "2em", marginBottom: "8px" }}>🏢</div>
+                    <div style={{ fontWeight: "bold", fontSize: "1.2em" }}>
+                      {new Set(solicitudesOfertas.map(s => s.requestOrgId)).size}
+                    </div>
+                    <div style={{ color: "var(--text-secondary)" }}>
+                      Organizaciones Únicas
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: "var(--spacing-md)",
+                    backgroundColor: "var(--background-secondary)",
+                    borderRadius: "var(--border-radius-md)",
+                    textAlign: "center"
+                  }}>
+                    <div style={{ fontSize: "2em", marginBottom: "8px" }}>🎁</div>
+                    <div style={{ fontWeight: "bold", fontSize: "1.2em" }}>
+                      {new Set(solicitudesOfertas.map(s => s.offerId)).size}
+                    </div>
+                    <div style={{ color: "var(--text-secondary)" }}>
+                      Ofertas Solicitadas
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

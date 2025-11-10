@@ -15,11 +15,4 @@ public class SolidaryEventProducer {
         kafkaTemplate.send(TOPIC, event);
     }
 
-    //prueba del punto 6
-/*
-    public void deleteEvent(SolidaryEvent event) {
-        kafkaTemplate.send(TOPIC, event);
-    }
-
-    */
 }

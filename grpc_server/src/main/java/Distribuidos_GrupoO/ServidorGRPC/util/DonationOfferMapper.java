@@ -2,6 +2,7 @@ package Distribuidos_GrupoO.ServidorGRPC.util;
 
 import Distribuidos_GrupoO.ServidorGRPC.model.InventarioDeDonaciones;
 import Distribuidos_GrupoO.ServidorGRPC.model.Usuario;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationItem;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.offer.DonationOffer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ public class DonationOfferMapper {
     public static List<InventarioDeDonaciones> toInventarioList(DonationOffer offer, Usuario usuarioAlta) {
         List<InventarioDeDonaciones> list = new ArrayList<>();
         if (offer.getDonations() != null) {
-            for (DonationOffer.DonationItem item : offer.getDonations()) {
+            for (DonationItem item : offer.getDonations()) {
                 InventarioDeDonaciones inv = new InventarioDeDonaciones();
                 inv.setCategoria(parseCategoria(item.getCategory()));
                 inv.setDescripcion(item.getDescription());
@@ -26,9 +27,9 @@ public class DonationOfferMapper {
     }
 
     public static DonationOffer fromInventarioList(List<InventarioDeDonaciones> inventarioList, String offerId, String organizationId) {
-        List<DonationOffer.DonationItem> items = new ArrayList<>();
+        List<DonationItem> items = new ArrayList<>();
         for (InventarioDeDonaciones inv : inventarioList) {
-            items.add(new DonationOffer.DonationItem(
+            items.add(new DonationItem(
                 inv.getCategoria().name(),
                 inv.getDescripcion(),
                 String.valueOf(inv.getCantidad())

@@ -1,6 +1,7 @@
 package Distribuidos_GrupoO.ServidorGRPC.controller;
 
 import Distribuidos_GrupoO.ServidorGRPC.service.IInventarioDeDonacionesService;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationItem;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer.DonationTransfer;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer.DonationTransferProducer;
 import Distribuidos_GrupoO.ServidorGRPC.model.InventarioDeDonaciones;
@@ -52,7 +53,7 @@ public class DonationTransferController {
     }
 
     private String validateAndProcessTransfer(DonationTransfer transfer) {
-        for (DonationTransfer.DonationItem item : transfer.getDonations()) {
+        for (DonationItem item : transfer.getDonations()) {
             InventarioDeDonaciones.CategoriaEnum categoria;
             try {
                 categoria = InventarioDeDonaciones.CategoriaEnum.valueOf(item.getCategory());

@@ -1,5 +1,7 @@
 package Distribuidos_GrupoO.ServidorGRPC.service.kafka.request;
 
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationItem;
+
 import java.util.List;
 
 public class DonationRequest {
@@ -24,18 +26,4 @@ public class DonationRequest {
     public List<DonationItem> getRequestedDonations() { return requestedDonations; }
     public void setRequestedDonations(List<DonationItem> requestedDonations) { this.requestedDonations = requestedDonations; }
 
-    public static class DonationItem {
-        private String category;
-        private String description;
-
-        public DonationItem() {}
-        public DonationItem(String category, String description) {
-            this.category = category;
-            this.description = description;
-        }
-        public String getCategory() { return category; }
-        public void setCategory(String category) { this.category = category; }
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-    }
 }

@@ -1,6 +1,7 @@
 package Distribuidos_GrupoO.ServidorGRPC.config;
 
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.offer.DonationOffer;
+import Distribuidos_GrupoO.ServidorGRPC.service.kafka.offerrequest.OfferRequest;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.request.DonationRequest;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.cancellation.DonationCancellation;
 import Distribuidos_GrupoO.ServidorGRPC.service.kafka.transfer.DonationTransfer;
@@ -163,6 +164,25 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, EventAdhesion> eventAdhesionKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, EventAdhesion> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(eventAdhesionConsumerFactory());
+        return factory;
+    }
+
+    //------oferta-solicitud-----------------recu
+    @Bean
+    public ConsumerFactory<String, OfferRequest> offerRequestConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "oferta-solicitud-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(OfferRequest.class, false));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, OfferRequest> offerRequestKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, OfferRequest> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(offerRequestConsumerFactory());
         return factory;
     }
 
