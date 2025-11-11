@@ -19,11 +19,19 @@ public class OfferRequestController {
     @Autowired
     private OfferRequestConsumer consumer;
 
-    @PostMapping("/send")
-    public ResponseEntity<String> sendOfferRequest(@RequestBody OfferRequest offerRequest) {
-        producer.sendOfferRequest(offerRequest);
-        return ResponseEntity.ok("Solicitud de oferta enviada correctamente");
-    }
 
 
+
+        @PostMapping("/send")
+        public ResponseEntity<String> sendOfferRequest (@RequestBody OfferRequest offerRequest) {
+            try {
+                producer.sendOfferRequest(offerRequest);
+                return ResponseEntity.ok("Solicitud de oferta enviada correctamente");
+
+
+            } catch (Exception e) {
+                return ResponseEntity.internalServerError()
+                        .body("Error al procesar la solicitud" + e.getMessage());
+            }
+        }
 }

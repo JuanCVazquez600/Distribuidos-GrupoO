@@ -18,6 +18,12 @@ public class DonationOfferController {
     
     @Autowired
     private DonationOfferConsumer consumer;
+    
+    @Autowired
+    private Distribuidos_GrupoO.ServidorGRPC.repository.DonationOfferRepository repository;
+    
+    @Autowired
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     /**
      * Publica una oferta de donación en Kafka
@@ -29,10 +35,24 @@ public class DonationOfferController {
     }
 
     /**
-     * Lista ofertas recibidas de otras organizaciones
+     * Lista ofertas desde la base de datos
      */
     @GetMapping("/list")
     public List<DonationOffer> listOffers() {
-        return consumer.getOffers();
+        return repository.findAll().stream()
+            .map(entity -> {
+                try {
+                    List<Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationItem> donations = null;
+                    if (entity.getDonationsJson() != null && !entity.getDonationsJson().isEmpty()) {
+                        donations = objectMapper.readValue(entity.getDonationsJson(), 
+                            new com.fasterxml.jackson.core.type.TypeReference<List<Distribuidos_GrupoO.ServidorGRPC.service.kafka.DonationItem>>() {});
+                    }
+                    return new DonationOffer(entity.getOfferId(), entity.getOrganizationId(), donations);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return new DonationOffer(entity.getOfferId(), entity.getOrganizationId(), null);
+                }
+            })
+            .collect(java.util.stream.Collectors.toList());
     }
 }
