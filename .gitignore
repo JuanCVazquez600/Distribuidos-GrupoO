@@ -11,8 +11,8 @@ __pycache__/
 *.pyc
 *.so
 
-# Kafka directory
-kafka/
+# Kafka server directory (but not code)
+/kafka/
 
 # Environment files
 .env
