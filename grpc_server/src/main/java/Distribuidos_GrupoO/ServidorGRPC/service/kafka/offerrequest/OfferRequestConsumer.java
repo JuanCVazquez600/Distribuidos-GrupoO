@@ -43,19 +43,19 @@ import java.util.List;
 
 
             if (!this.isOurOrganization(offer.getOfferOrgId())) {
-                logger.error("❌ Validacion rechazada:La oferta no pertenece a nuestra organizacion {}, (esperado: {})", offer.getOfferOrgId(), ourOrganizationId);
+                logger.error("Validacion rechazada:La oferta no pertenece a nuestra organizacion {}, (esperado: {})", offer.getOfferOrgId(), ourOrganizationId);
                 return;
             }
 
 
             if (!isMyOffer(offer.getOfferId())) {
-                logger.error("❌La oferta no pertenece a nuestra organizacion: {}", offer.getOfferId());
+                logger.error("La oferta no pertenece a nuestra organizacion: {}", offer.getOfferId());
                 return;
             }
 
 
             if (!donationsMatch(offer.getOfferId(), offer.getDonations())) {
-                logger.error("❌ Las donaciones no coinciden para oferta: {}", offer.getOfferId());
+                logger.error(" Las donaciones no coinciden para oferta: {}", offer.getOfferId());
                 return;
             }
 
@@ -118,7 +118,7 @@ import java.util.List;
 
         // Compara dos listas de donaciones elemento por elemento
         private boolean compareDonations(List<DonationItem> original, List<DonationItem> requested) {
-            // ❌ Si el tamaño es diferente, no coinciden
+            //  Si el tamaño es diferente, no coinciden
             if (original.size() != requested.size()) {
                 logger.debug(" Las listas tienen diferente tamaño: original={}, solicitada={}",
                         original.size(), requested.size());
@@ -134,14 +134,14 @@ import java.util.List;
                     boolean quantityMatch = originalItem.getQuantity().equals(requestedItem.getQuantity());
 
                     if (categoryMatch && descriptionMatch && quantityMatch) {
-                        logger.debug("✅ COINCIDENCIA: en las unidades");
+                        logger.debug(" COINCIDENCIA: en las unidades");
                         foundMatch = true;
                         break;
                     }
                 }
 
                 if (!foundMatch) {
-                    logger.debug("❌ NO SE ENCONTRO COINCIDENCIA CON LAS UNIDADES");
+                    logger.debug(" NO SE ENCONTRO COINCIDENCIA CON LAS UNIDADES");
                     return false;
                 }
             }
